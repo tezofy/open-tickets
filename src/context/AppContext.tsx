@@ -271,7 +271,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         eventTitle: ev?.title || 'Open Tickets Event',
         venue: ev?.venue || 'South Africa',
         dateTime: ev?.otDateTime || '2026-11-01, 18:00',
-        bannerImage: ev?.bannerImage || '/media/events/ot_01m5ena2smd0hden3vqrxdks07.jpg',
+        bannerImage: ev?.bannerImage || 'media/events/ot_01m5ena2smd0hden3vqrxdks07.jpg',
         seatCategory: item.seatCategory,
         quantity: item.quantity,
         attendeeName: payload.attendeeName,

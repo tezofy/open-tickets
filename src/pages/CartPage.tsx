@@ -13,10 +13,10 @@ import { useApp } from '../context/AppContext';
 import { EVENTS, formatZAR } from '../data/events';
 
 const PAYMENT_METHODS = [
-  { id: '1Voucher', label: '1Voucher', logo: '/assets/pgw-logos/1voucher.svg' },
-  { id: 'Visa', label: 'Visa Credit / Debit', logo: '/assets/pgw-logos/pgw-visa.svg' },
-  { id: 'Mastercard', label: 'Mastercard', logo: '/assets/pgw-logos/pgw-mastercard.svg' },
-  { id: 'Banking App', label: 'Banking App', logo: '/assets/pgw-logos/bank-app.svg' },
+  { id: '1Voucher', label: '1Voucher', logo: 'assets/pgw-logos/1voucher.svg' },
+  { id: 'Visa', label: 'Visa Credit / Debit', logo: 'assets/pgw-logos/pgw-visa.svg' },
+  { id: 'Mastercard', label: 'Mastercard', logo: 'assets/pgw-logos/pgw-mastercard.svg' },
+  { id: 'Banking App', label: 'Banking App', logo: 'assets/pgw-logos/bank-app.svg' },
 ];
 
 export const CartPage: React.FC = () => {

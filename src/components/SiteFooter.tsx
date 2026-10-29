@@ -16,12 +16,12 @@ export const SiteFooter: React.FC = () => {
               <Link aria-label="Open Tickets home" className="group flex w-fit items-center select-none" to="/">
                 <img
                   alt="Open Tickets"
-                  src="/assets/logo/opentickets-logo-for-light.svg"
+                  src="assets/logo/opentickets-logo-for-light.svg"
                   className="h-8 w-auto transition-transform duration-200 group-hover:scale-105 dark:hidden"
                 />
                 <img
                   alt="Open Tickets"
-                  src="/assets/logo/opentickets-logo-for-dark.svg"
+                  src="assets/logo/opentickets-logo-for-dark.svg"
                   className="hidden h-8 w-auto transition-transform duration-200 group-hover:scale-105 dark:block"
                 />
               </Link>
@@ -130,10 +130,10 @@ export const SiteFooter: React.FC = () => {
                 <span className="text-[10px] text-muted-foreground sm:text-[11px]">We accept</span>
                 <div className="flex flex-wrap items-center justify-center gap-1.5">
                   {[
-                    { title: '1Voucher', src: '/assets/pgw-logos/1voucher.svg' },
-                    { title: 'Visa', src: '/assets/pgw-logos/pgw-visa.svg' },
-                    { title: 'Mastercard', src: '/assets/pgw-logos/pgw-mastercard.svg' },
-                    { title: 'Banking app', src: '/assets/pgw-logos/bank-app.svg' },
+                    { title: '1Voucher', src: 'assets/pgw-logos/1voucher.svg' },
+                    { title: 'Visa', src: 'assets/pgw-logos/pgw-visa.svg' },
+                    { title: 'Mastercard', src: 'assets/pgw-logos/pgw-mastercard.svg' },
+                    { title: 'Banking app', src: 'assets/pgw-logos/bank-app.svg' },
                   ].map((pgw) => (
                     <span
                       key={pgw.title}

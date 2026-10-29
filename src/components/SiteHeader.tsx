@@ -123,12 +123,12 @@ export const SiteHeader: React.FC<{ mobileTitle?: string }> = ({ mobileTitle }) 
               <Link aria-label="Open Tickets home" className="group flex w-fit items-center select-none" to="/">
                 <img
                   alt="Open Tickets"
-                  src="/assets/logo/opentickets-logo-for-light.svg"
+                  src="assets/logo/opentickets-logo-for-light.svg"
                   className="h-8 w-auto transition-transform duration-200 group-hover:scale-105 dark:hidden"
                 />
                 <img
                   alt="Open Tickets"
-                  src="/assets/logo/opentickets-logo-for-dark.svg"
+                  src="assets/logo/opentickets-logo-for-dark.svg"
                   className="hidden h-8 w-auto transition-transform duration-200 group-hover:scale-105 dark:block"
                 />
               </Link>

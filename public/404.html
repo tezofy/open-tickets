@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8"><title>Loading Open Tickets…</title></head>
+  <body>
+    <script>
+      // GitHub Pages has no server-side SPA rewrite. Forward project routes to the SPA entry.
+      const projectBase = '/open-tickets';
+      const path = location.pathname.startsWith(projectBase)
+        ? location.pathname.slice(projectBase.length)
+        : location.pathname;
+      location.replace(projectBase + '/?redirect=' + encodeURIComponent((path || '/') + location.search + location.hash));
+    </script>
+  </body>
+</html>

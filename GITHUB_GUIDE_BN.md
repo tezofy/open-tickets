@@ -43,7 +43,19 @@ git push
 
 Repository খুলে **Add file → Upload files** চাপুন, ZIP Extract করা প্রজেক্টের ফাইল ও ফোল্ডার টেনে দিন, নিচে commit message লিখে **Commit changes** চাপুন। `node_modules` বা `dist` যেন upload না হয় তা যাচাই করুন। বড়/অনেক asset থাকলে Git CLI পদ্ধতিই ভালো।
 
-## ৫) চালানো ও পরিবর্তন যাচাই
+## ৫) GitHub Pages-এ সাইট চালু করুন (এই URL-এর জন্য জরুরি)
+
+এই রিপো raw source-এ `index.html`-এর `/src/main.tsx` ব্রাউজারে চালানো যায় না; GitHub Pages Vite/TSX নিজে compile করে না। ZIP-এর `.github/workflows/deploy.yml` GitHub Actions-এ `npm ci` চালিয়ে `dist/` build ও deploy করে, আর `vite.config.ts` `/open-tickets/` base path সেট করে।
+
+1. রিপোতে পরিবর্তন push করুন: `git add . && git commit -m "Fix GitHub Pages deployment" && git push`।
+2. GitHub repository → **Settings → Pages** খুলুন।
+3. **Build and deployment → Source** থেকে **GitHub Actions** বেছে নিন।
+4. **Actions** ট্যাবে workflow সফল হওয়া পর্যন্ত অপেক্ষা করুন। এটি `main` branch push হলে নিজে থেকেই deploy হবে।
+5. এরপর `https://tezofy.github.io/open-tickets/` refresh করুন। Route-এর সরাসরি link/refresh-এর জন্য `public/404.html` fallback-ও bundle-এ আছে।
+
+Repository-এর নাম `open-tickets` না হলে `vite.config.ts` ও `public/404.html`-এ `/open-tickets/` path-টি আপনার repo name দিয়ে বদলাতে হবে।
+
+## ৬) চালানো ও পরিবর্তন যাচাই
 
 ```bash
 npm install

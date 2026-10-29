@@ -2,12 +2,12 @@
   "name": "Open Tickets site prototype", 
   "short_name": "Open Tickets",
   "description": "Local Open Tickets website prototype and public event listing snapshot.",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#040e0e",
   "theme_color": "#154546",
   "icons": [
-    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
   ]
 }

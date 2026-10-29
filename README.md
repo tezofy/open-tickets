@@ -96,6 +96,10 @@ npm run preview
 
 `src/data/events.ts` contains a bundled public snapshot of the event cards and ticket tiers collected from the public Open Tickets home/event pages on 29 October 2026. It is intentionally local so the prototype works without cross-origin API access. It does **not** update itself from Open Tickets. For current facts, use the official event pages linked in the detail view or update the local data and image assets after checking the source. Do not treat old snapshot prices or availability as live.
 
-## Publishing
+## Deploy to GitHub Pages
+
+This repository includes `.github/workflows/deploy.yml`. Push the project to the `main` branch of the repository named `open-tickets`; GitHub Actions runs `npm ci`, builds with the `/open-tickets/` base path, and deploys `dist/` to Pages. In GitHub, open **Settings → Pages** and choose **GitHub Actions** as the build/deploy source. The `public/404.html` file handles direct refreshes on client-side routes.
+
+For a different repository name, change the base path in `vite.config.ts` and `public/404.html` to match that repository URL before deploying.
 
 See [`GITHUB_GUIDE_BN.md`](./GITHUB_GUIDE_BN.md) for step-by-step repository creation, push commands and a Bengali file map. The repository should not include `node_modules/`, `dist/`, browser caches, screenshots or generated ZIP archives.
