@@ -1,1 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="17" fill="#154546"/><path d="M19 19h26v26H19z" fill="none" stroke="#a9dd36" stroke-width="4"/><path d="M25 13v12m14-12v12M25 39v12m14-12v12" stroke="#a9dd36" stroke-width="3.5" stroke-linecap="round"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Open Tickets OT mark">
+  <defs><mask id="ticket-cut"><rect x="2" y="2" width="60" height="60" rx="17" fill="white"/><circle cx="2" cy="32" r="6" fill="black"/><circle cx="62" cy="32" r="6" fill="black"/></mask></defs>
+  <rect x="2" y="2" width="60" height="60" rx="17" fill="#041e2a" mask="url(#ticket-cut)"/>
+  <rect x="13" y="15" width="38" height="34" rx="8" fill="none" stroke="#f2c318" stroke-width="4"/>
+  <circle cx="25" cy="32" r="7" fill="none" stroke="#f2c318" stroke-width="4"/>
+  <path d="M34 24h12M40 24v17" fill="none" stroke="#f2c318" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="32" cy="9" r="1.6" fill="#f2c318"/><circle cx="32" cy="55" r="1.6" fill="#f2c318"/>
+</svg>
