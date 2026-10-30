@@ -1,56 +1,95 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Ticket } from 'lucide-react';
+
+const CTA_SLIDES = [
+  { src: 'media/cta-slider-concert.jpg', label: 'Live Music', title: 'Turn the crowd up' },
+  { src: 'media/cta-slider-football.jpg', label: 'Match Day', title: 'Fill every seat' },
+  { src: 'media/cta-slider-festival.jpg', label: 'Festivals', title: 'Create the weekend' },
+  { src: 'media/cta-slider-community.jpg', label: 'Community', title: 'Bring everyone together' },
+];
 
 export const OrganizerCtaBand: React.FC = () => {
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    if (paused) return;
+    const timer = window.setInterval(() => {
+      setActiveSlide((current) => (current + 1) % CTA_SLIDES.length);
+    }, 4200);
+    return () => window.clearInterval(timer);
+  }, [paused]);
+
+  const showPrevious = () => setActiveSlide((current) => (current - 1 + CTA_SLIDES.length) % CTA_SLIDES.length);
+  const showNext = () => setActiveSlide((current) => (current + 1) % CTA_SLIDES.length);
+
   return (
     <div className="mx-auto mt-14 w-full max-w-7xl px-4 sm:mt-16 sm:px-6">
-      <div className="opentickets-cta-band relative w-full overflow-hidden rounded-2xl sm:rounded-[28px]">
-        {/* Subtle radial dot grid overlay */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(currentColor_1px,transparent_1px)] [background-size:18px_18px] [mask-image:radial-gradient(520px_circle_at_center,white,transparent)] text-pine dark:text-volt"
-        />
+      <section className="opentickets-cta-band ot-organizer-slider-band" aria-labelledby="organizer-cta-title">
+        <div className="ot-organizer-slider-pattern" aria-hidden="true" />
 
-        <div className="relative z-20 px-5 py-8 sm:p-10">
-          <div className="mx-auto flex max-w-2xl flex-col items-center text-center lg:max-w-none lg:flex-row lg:items-center lg:justify-between lg:gap-10 lg:text-left">
-            <div className="flex min-w-0 flex-col items-center lg:items-start">
-              <span className="inline-flex items-center gap-2 rounded-full border border-pine/20 bg-pine/8 py-1 pr-3 pl-2 text-[11px] font-semibold tracking-wide text-foreground/80 backdrop-blur-sm dark:border-white/20 dark:bg-white/10 dark:text-white/85">
-                <span aria-hidden="true" className="relative flex size-1.5 shrink-0">
-                  <span className="opentickets-live-ping absolute inline-flex size-full rounded-full bg-volt" />
-                  <span className="relative inline-flex size-full rounded-full bg-volt" />
-                </span>
-                Live across South Africa
-              </span>
+        <div className="ot-organizer-slider-copy">
+          <span className="inline-flex items-center gap-2 rounded-full border border-pine/20 bg-pine/8 py-1 pr-3 pl-2 text-[11px] font-semibold tracking-wide text-foreground/80 backdrop-blur-sm dark:border-white/20 dark:bg-white/10 dark:text-white/85">
+            <span aria-hidden="true" className="relative flex size-1.5 shrink-0">
+              <span className="opentickets-live-ping absolute inline-flex size-full rounded-full bg-volt" />
+              <span className="relative inline-flex size-full rounded-full bg-volt" />
+            </span>
+Built for event creators
+          </span>
 
-              <h2 className="mt-4 font-heading text-[22px] leading-tight font-extrabold tracking-tight text-balance text-foreground sm:mt-5 sm:text-3xl lg:text-4xl dark:text-white">
-                Every seat, <span className="text-accent-emphasis dark:text-volt">one listing</span> away
-                <span className="text-accent-emphasis dark:text-volt">.</span>
-              </h2>
+          <h2 id="organizer-cta-title" className="mt-4 font-heading text-[25px] leading-[1.08] font-extrabold tracking-tight text-balance text-foreground sm:mt-5 sm:text-4xl dark:text-white">
+            Your event deserves <span className="text-accent-emphasis dark:text-volt">a full house</span><span className="text-accent-emphasis dark:text-volt">.</span>
+          </h2>
 
-              <p className="mt-2.5 max-w-lg text-[13px] leading-6 text-balance text-foreground/75 sm:mt-3 sm:text-sm dark:text-white/70">
-                Put your event in front of the people already looking for one. Set it up in minutes, sell from day one, and get paid on time.
-              </p>
-            </div>
+          <p className="mt-3 max-w-lg text-[13px] leading-6 text-foreground/70 sm:text-sm dark:text-white/68">
+            Create your listing, reach the right audience, and manage every sale from one simple platform—from launch to payout.
+          </p>
 
-            <div className="mt-5 flex w-full flex-row items-stretch justify-center gap-2 sm:mt-6 sm:w-auto sm:gap-3 lg:mt-0 lg:shrink-0">
-              <Link
-                to="/host"
-                className="opentickets-glow inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 text-[13px] font-semibold whitespace-nowrap sm:w-auto sm:flex-none sm:gap-2 sm:px-5 sm:text-sm"
-              >
-                Start selling
-                <ArrowRight className="size-4" />
-              </Link>
-              <Link
-                to="/events"
-                className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl border border-pine/25 bg-pine/8 px-3 text-[13px] font-semibold whitespace-nowrap text-foreground backdrop-blur-sm transition-colors hover:border-pine/40 hover:bg-pine/15 sm:w-auto sm:flex-none sm:px-5 sm:text-sm dark:border-white/25 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
-              >
-                Browse events
-              </Link>
-            </div>
+          <div className="mt-5 flex flex-wrap items-center gap-2.5">
+            <Link to="/host" className="opentickets-glow inline-flex h-11 items-center justify-center gap-2 rounded-xl px-5 text-[13px] font-semibold sm:text-sm">
+              List your event <ArrowRight className="size-4" />
+            </Link>
+            <Link to="/events" className="inline-flex h-11 items-center justify-center rounded-xl border border-pine/25 bg-pine/8 px-5 text-[13px] font-semibold text-foreground backdrop-blur-sm transition-colors hover:border-pine/40 hover:bg-pine/15 sm:text-sm dark:border-white/25 dark:bg-white/10 dark:text-white dark:hover:bg-white/20">
+              Browse events
+            </Link>
           </div>
         </div>
-      </div>
+
+        <div
+          className="ot-organizer-slider-wrap"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          onFocus={() => setPaused(true)}
+          onBlur={() => setPaused(false)}
+        >
+          <div className="ot-organizer-ticket-slider" aria-roledescription="carousel" aria-label="Event experiences">
+            {CTA_SLIDES.map((slide, index) => (
+              <div key={slide.src} className={`ot-organizer-slide ${index === activeSlide ? 'is-active' : ''}`} aria-hidden={index !== activeSlide}>
+                <img src={slide.src} alt={index === activeSlide ? slide.title : ''} loading="lazy" />
+                <div className="ot-organizer-slide-shade" />
+                <span className="ot-organizer-slide-category"><Ticket className="size-3" />{slide.label}</span>
+                <div className="ot-organizer-slide-caption">
+                  <small>YOUR EVENT · YOUR CROWD</small>
+                  <strong>{slide.title}</strong>
+                </div>
+              </div>
+            ))}
+
+            <span className="ot-organizer-slider-perforation" aria-hidden="true" />
+            <span className="ot-organizer-slider-serial" aria-hidden="true">OT · 0{activeSlide + 1}</span>
+
+            <button type="button" className="ot-organizer-slider-control ot-organizer-slider-prev" onClick={showPrevious} aria-label="Previous image"><ChevronLeft className="size-4" /></button>
+            <button type="button" className="ot-organizer-slider-control ot-organizer-slider-next" onClick={showNext} aria-label="Next image"><ChevronRight className="size-4" /></button>
+          </div>
+
+          <div className="ot-organizer-slider-dots" aria-label="Choose slide">
+            {CTA_SLIDES.map((slide, index) => (
+              <button key={slide.src} type="button" aria-label={`Show ${slide.label}`} onClick={() => setActiveSlide(index)} className={index === activeSlide ? 'is-active' : ''} />
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

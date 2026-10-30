@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ExternalLink, MinusCircle, PlusCircle, X } from 'lucide-react';
+import { CalendarDays, ChevronDown, ChevronUp, ExternalLink, Info, MapPin, MinusCircle, Navigation, PlusCircle, ShieldCheck, Sparkles, Ticket, X } from 'lucide-react';
 import { EVENTS, findEventBySlug, formatZAR } from '../data/events';
 import { useApp } from '../context/AppContext';
 import { OpenTicketsCard } from '../components/OpenTicketsCard';
@@ -11,11 +11,42 @@ export const EventDetailPage: React.FC = () => {
   const { addTicketsToCart } = useApp();
 
   const event = useMemo(() => findEventBySlug(slug), [slug]);
+  const eventTargetTime = useMemo(() => {
+    if (!event?.otDateTime) return 0;
+    const normalized = event.otDateTime.replace(', ', 'T');
+    return Date.parse(`${normalized}:00+02:00`);
+  }, [event?.otDateTime]);
 
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, ended: false });
   const [inQueue, setInQueue] = useState(false);
   const [showSelectModal, setShowSelectModal] = useState(false);
   const [selectedQty, setSelectedQty] = useState<Record<string, number>>({});
   const [addingToCart, setAddingToCart] = useState(false);
+  const [aboutExpanded, setAboutExpanded] = useState(false);
+
+  useEffect(() => {
+    const updateCountdown = () => {
+      const remaining = eventTargetTime - Date.now();
+      if (!eventTargetTime || remaining <= 0) {
+        setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0, ended: true });
+        return;
+      }
+
+      setCountdown({
+        days: Math.floor(remaining / 86_400_000),
+        hours: Math.floor((remaining % 86_400_000) / 3_600_000),
+        minutes: Math.floor((remaining % 3_600_000) / 60_000),
+        seconds: Math.floor((remaining % 60_000) / 1_000),
+        ended: false,
+      });
+    };
+
+    updateCountdown();
+    const timer = window.setInterval(updateCountdown, 1_000);
+    return () => window.clearInterval(timer);
+  }, [eventTargetTime]);
+
+  useEffect(() => setAboutExpanded(false), [event?.id]);
 
   if (!event) {
     return (
@@ -87,75 +118,106 @@ export const EventDetailPage: React.FC = () => {
             100% OPENTICKETS.CO.ZA EVENT DETAIL DESIGN
             1) Top Full-Width Banner & Title Card (.card.m-card.shadow)
            ============================================================== */}
-        <div className="ot-detail-surface overflow-hidden">
-          <div className="relative max-h-[450px] w-full overflow-hidden bg-[#f8f9fc] dark:bg-[#071718]">
+        <section className="ot-detail-hero-ticket" aria-labelledby="event-title">
+          <span className="ot-detail-hero-cut ot-detail-hero-cut-left" aria-hidden="true" />
+          <span className="ot-detail-hero-cut ot-detail-hero-cut-right" aria-hidden="true" />
+
+          <div className="ot-detail-hero-media">
             {isSquareBanner && (
-              <img
-                src={event.bannerImage}
-                alt=""
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-xl"
-              />
+              <img src={event.bannerImage} alt="" aria-hidden="true" className="ot-detail-hero-backdrop" />
             )}
             <img
               src={event.bannerImage}
               alt={event.title}
-              className={`relative z-10 w-full ${
-                isSquareBanner ? 'max-h-[380px] object-contain mx-auto' : 'max-h-[450px] object-cover'
-              }`}
+              className={`ot-detail-hero-image ${isSquareBanner ? 'is-contained' : ''}`}
             />
-          </div>
-
-          {/* OpenTickets card-body p-3 */}
-          <div className="p-4 sm:px-5 sm:py-4">
-            <h1 className="text-[17px] font-bold text-[#3a3b45] sm:text-[19px] dark:text-[#f2f7f7]">
-              {event.title}
-            </h1>
-            <div className="mt-1.5 flex flex-wrap items-center gap-y-1 text-[13.5px]">
-              <span className="inline-flex items-center gap-1.5 text-[#858796] dark:text-[#9cb2b2]">
-                <svg aria-hidden="true" viewBox="0 0 384 512" className="size-3.5 shrink-0 fill-current">
-                  <path d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0zM192 272c44.183 0 80-35.817 80-80s-35.817-80-80-80-80 35.817-80 80 35.817 80 80 80z" />
-                </svg>
-                {event.venue}
-              </span>
-
-              <span className="ml-4 inline-flex items-center gap-1.5 font-semibold text-[#e74a3b] dark:text-[#ff6568]">
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 448 512"
-                  className="size-3.5 shrink-0 fill-[#b7b9cc] dark:fill-[#738f90]"
-                >
-                  <path d="M152 64H296V24C296 10.75 306.7 0 320 0C333.3 0 344 10.75 344 24V64H384C419.3 64 448 92.65 448 128V448C448 483.3 419.3 512 384 512H64C28.65 512 0 483.3 0 448V128C0 92.65 28.65 64 64 64H104V24C104 10.75 114.7 0 128 0C141.3 0 152 10.75 152 24V64zM48 448C48 456.8 55.16 464 64 464H384C392.8 464 400 456.8 400 448V192H48V448z" />
-                </svg>
-                {event.otDateTime}
-              </span>
+            <div className="ot-detail-hero-shade" aria-hidden="true" />
+            <div className="ot-detail-hero-badges">
+              <span><Sparkles className="size-3" /> {event.status}</span>
+              <Link to={`/events?category=${encodeURIComponent(event.category)}`}>{event.category}</Link>
+            </div>
+            <div className="ot-detail-hero-copy">
+              <p>OPEN TICKETS · LIVE EXPERIENCE</p>
+              <h1 id="event-title">{event.title}</h1>
             </div>
           </div>
-        </div>
+
+          <div className="ot-detail-hero-stub">
+            <div className="ot-detail-date-block" aria-label={event.heroDateLabel}>
+              <span>{event.monthShort}</span>
+              <strong>{event.dayNum}</strong>
+              <small>2026</small>
+            </div>
+            <div className="ot-detail-stub-center">
+              <div className="ot-detail-hero-meta">
+                <span><MapPin className="size-4" /> {event.venue}</span>
+                <span><CalendarDays className="size-4" /> {event.otDateTime}</span>
+              </div>
+              <div className={`ot-detail-countdown ${countdown.ended ? 'is-ended' : ''}`} aria-label={countdown.ended ? 'This event has ended' : 'Time remaining until the event'}>
+                {countdown.ended ? (
+                  <strong>EVENT ENDED</strong>
+                ) : (
+                  <>
+                    <span><strong key={`days-${countdown.days}`}>{String(countdown.days).padStart(2, '0')}</strong><small>Days</small></span>
+                    <i aria-hidden="true">:</i>
+                    <span><strong key={`hours-${countdown.hours}`}>{String(countdown.hours).padStart(2, '0')}</strong><small>Hours</small></span>
+                    <i aria-hidden="true">:</i>
+                    <span><strong key={`minutes-${countdown.minutes}`}>{String(countdown.minutes).padStart(2, '0')}</strong><small>Minutes</small></span>
+                    <i aria-hidden="true">:</i>
+                    <span><strong key={`seconds-${countdown.seconds}`}>{String(countdown.seconds).padStart(2, '0')}</strong><small>Seconds</small></span>
+                  </>
+                )}
+              </div>
+            </div>
+            <div className="ot-detail-price-pass">
+              <small>Tickets from</small>
+              <strong>{formatZAR(event.startsFrom)}</strong>
+              <span><Ticket className="size-4" /> ADMIT ONE</span>
+            </div>
+          </div>
+        </section>
 
         {/* ==============================================================
             2) OpenTickets Two-Column Detail Layout (row mt-4: col-md-8 + col-md-4)
            ============================================================== */}
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
           {/* LEFT COLUMN (col-md-8 -> 8 cols): About + Location */}
-          <div className="space-y-6 lg:col-span-8">
+          <div className="ot-detail-left-column space-y-6 lg:col-span-8">
             {/* About Card */}
-            <div className="ot-detail-surface p-6">
-              <h2 className="mb-3.5 text-[18px] font-bold text-[#3a3b45] dark:text-[#f2f7f7]">
-                About {event.title}
-              </h2>
-              <div className="space-y-3 text-[14.5px] leading-relaxed text-[#6e707e] dark:text-muted-foreground">
-                {event.aboutParagraphs.map((p, idx) => (
-                  <p key={idx}>{p}</p>
-                ))}
-                {event.aboutBullets.length > 0 && (
-                  <ul className="mt-3 list-disc space-y-2 pl-5">
-                    {event.aboutBullets.map((b, idx) => (
-                      <li key={idx}>{b}</li>
-                    ))}
-                  </ul>
-                )}
-                <div className="mt-4 border-t border-black/8 pt-3 text-xs text-[#858796] dark:border-white/10 dark:text-muted-foreground">
+            <article className="ot-detail-info-ticket">
+              <div className="ot-detail-section-heading">
+                <span><Info className="size-4" /></span>
+                <div><small>EVENT GUIDE</small><h2>About {event.title}</h2></div>
+              </div>
+              <div className="ot-detail-rich-copy">
+                <div
+                  id="event-about-copy"
+                  className={`ot-detail-about-copy ${aboutExpanded ? 'is-expanded' : ''}`}
+                >
+                  {event.aboutParagraphs.map((p, idx) => (
+                    <p key={idx}>{p}</p>
+                  ))}
+                  {event.aboutBullets.length > 0 && (
+                    <ul className="mt-3 list-disc space-y-2 pl-5">
+                      {event.aboutBullets.map((b, idx) => (
+                        <li key={idx}>{b}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  className="ot-detail-learn-more"
+                  onClick={() => setAboutExpanded((expanded) => !expanded)}
+                  aria-expanded={aboutExpanded}
+                  aria-controls="event-about-copy"
+                >
+                  {aboutExpanded ? 'Show less' : 'Learn more'}
+                  {aboutExpanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+                </button>
+
+                <div className="ot-detail-organizer-line">
                   Organized by <strong className="text-[#3a3b45] dark:text-foreground">{event.organizerName}</strong> · Category:{' '}
                   <Link
                     to={`/events?category=${encodeURIComponent(event.category)}`}
@@ -165,20 +227,21 @@ export const EventDetailPage: React.FC = () => {
                   </Link>
                 </div>
               </div>
-            </div>
+            </article>
 
             {/* Location Card */}
-            <div className="ot-detail-surface p-6">
-              <h2 className="mb-3 text-[18px] font-bold text-[#3a3b45] dark:text-[#f2f7f7]">
-                Location
-              </h2>
-              <p className="mb-4 text-[14.5px] text-[#858796] dark:text-muted-foreground">
+            <article className="ot-detail-info-ticket ot-detail-location-ticket">
+              <div className="ot-detail-section-heading">
+                <span><Navigation className="size-4" /></span>
+                <div><small>VENUE</small><h2>Location</h2></div>
+              </div>
+              <p className="ot-detail-address">
                 <strong className="text-[#3a3b45] dark:text-foreground">{event.venue}</strong>:{' '}
                 {event.fullAddress}
               </p>
 
               {/* Embedded Static-Style Venue Map Card (Zero broken API key!) */}
-              <div className="relative h-52 w-full overflow-hidden rounded-lg border border-black/10 bg-[#eef2f6] dark:border-white/10 dark:bg-[#091c1d]">
+              <div className="ot-detail-map">
                 <svg
                   aria-hidden="true"
                   viewBox="0 0 800 260"
@@ -221,7 +284,7 @@ export const EventDetailPage: React.FC = () => {
                   </g>
                 </svg>
 
-                <div className="absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/92 px-3.5 py-2 text-xs shadow-md backdrop-blur-sm dark:bg-[#0e2627]/92">
+                <div className="ot-detail-map-caption">
                   <span className="truncate font-semibold text-[#3a3b45] dark:text-foreground">
                     {event.venue} · {event.city}
                   </span>
@@ -238,80 +301,57 @@ export const EventDetailPage: React.FC = () => {
                   </a>
                 </div>
               </div>
-            </div>
+            </article>
           </div>
 
-          {/* RIGHT COLUMN (col-md-4 -> 4 cols): OpenTickets Book Now Widget */}
-          <div className="lg:col-span-4">
-            <div className="ot-detail-surface sticky top-20 p-6">
-              {/* Exact OpenTickets alert-info Box */}
-              <div className="ot-alert-info mb-4" role="alert">
-                Please ensure that you have your email address and payment method such as a card, 1Voucher, Banking App, banking app, etc. ready before you start booking. Once you start you will need those items and you will have limited time to complete your purchase.
-              </div>
+          {/* Premium sticky booking pass */}
+          <div className="ot-detail-booking-column lg:col-span-4">
+            <aside className="ot-booking-ticket sticky top-20">
+              <span className="ot-booking-cut ot-booking-cut-left" aria-hidden="true" />
+              <span className="ot-booking-cut ot-booking-cut-right" aria-hidden="true" />
 
-              <h2 className="mb-3 text-[18px] font-bold text-[#3a3b45] dark:text-[#f2f7f7]">
-                Book Now
-              </h2>
-
-              <div className="mb-4">
-                <p className="mb-2 text-[13px] text-[#858796] dark:text-muted-foreground">
-                  Available Tickets:
-                </p>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="border-b border-black/6 dark:border-white/10">
-                        <th className="py-1.5 pl-0 text-left text-[11px] font-bold tracking-wider text-[#858796] uppercase">
-                          Seat Category
-                        </th>
-                        <th className="py-1.5 text-right text-[11px] font-bold tracking-wider text-[#858796] uppercase">
-                          From
-                        </th>
-                        <th className="py-1.5 pr-0 text-right text-[11px] font-bold tracking-wider text-[#858796] uppercase">
-                          To
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {event.ticketTiers.map((tier) => (
-                        <tr key={tier.id}>
-                          <td className="py-2 pr-2 pl-0 align-middle text-[15px] font-bold text-[#3a3b45] dark:text-foreground">
-                            {tier.seatCategory}
-                          </td>
-                          <td className="py-2 px-1 text-right align-middle text-[15px] font-bold whitespace-nowrap text-[#3a3b45] dark:text-foreground">
-                            {formatZAR(tier.price)}
-                          </td>
-                          <td className="py-2 pr-0 pl-2 text-right align-middle text-[15px] font-bold whitespace-nowrap text-[#3a3b45] dark:text-foreground">
-                            {formatZAR(tier.maxPrice || tier.price)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              <div className="ot-booking-head">
+                <div>
+                  <small>OFFICIAL TICKET DESK</small>
+                  <h2>Book your pass</h2>
                 </div>
+                <span><Ticket className="size-5" /></span>
               </div>
 
-              {/* OpenTickets Book Now Button & Queue Progress Indicator */}
+              <div className="ot-booking-notice" role="alert">
+                <ShieldCheck className="size-5" />
+                <p>Have your email and payment method ready. Your selected tickets are held for a limited time during checkout.</p>
+              </div>
+
+              <div className="ot-booking-tier-list">
+                <div className="ot-booking-tier-label">
+                  <span>Available tickets</span><small>{event.ticketTiers.length} OPTIONS</small>
+                </div>
+                {event.ticketTiers.map((tier, index) => (
+                  <div className="ot-booking-tier" key={tier.id}>
+                    <span className="ot-booking-tier-index">{String(index + 1).padStart(2, '0')}</span>
+                    <div><strong>{tier.seatCategory}</strong><small>{tier.priceCategoryLabel}</small></div>
+                    <span className="ot-booking-tier-price"><small>FROM</small><strong>{formatZAR(tier.price)}</strong></span>
+                  </div>
+                ))}
+              </div>
+
               {!inQueue ? (
-                <button
-                  type="button"
-                  onClick={handleBookNowClick}
-                  className="ot-btn-primary w-full"
-                >
-                  Book Now
+                <button type="button" onClick={handleBookNowClick} className="ot-booking-cta">
+                  <Ticket className="size-4" /> Book Now <span>→</span>
                 </button>
               ) : (
-                <div className="rounded-md border border-[#c7ebf1] bg-[#f1fbfd] p-3 text-xs text-[#1c606a] dark:border-sky-500/30 dark:bg-sky-950/30 dark:text-sky-200">
-                  <div className="font-semibold">
-                    You are in the queue, verifying real-time ticket availability...
-                  </div>
-                  <div className="ot-queue-track">
-                    <div className="ot-queue-bar" />
-                  </div>
+                <div className="ot-booking-queue">
+                  <strong>Checking live availability…</strong>
+                  <div className="ot-queue-track"><div className="ot-queue-bar" /></div>
                 </div>
               )}
-            </div>
+
+              <div className="ot-booking-foot">
+                <span className="ot-booking-barcode" aria-hidden="true" />
+                <small>SECURE CHECKOUT · OPEN TICKETS ZA</small>
+              </div>
+            </aside>
           </div>
         </div>
 

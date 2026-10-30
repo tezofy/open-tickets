@@ -1,6 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Moon, Search, ShoppingBag, Smartphone, Sun, Ticket, User } from 'lucide-react';
+import {
+  CircleHelp,
+  CirclePlus,
+  House,
+  Menu,
+  MessagesSquare,
+  Moon,
+  Music,
+  Search,
+  ShoppingBag,
+  Smartphone,
+  Sun,
+  Ticket,
+  Trees,
+  Trophy,
+  User,
+  X,
+} from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export const SiteHeader: React.FC<{ mobileTitle?: string }> = ({ mobileTitle }) => {
@@ -16,6 +33,7 @@ export const SiteHeader: React.FC<{ mobileTitle?: string }> = ({ mobileTitle }) 
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [navExpanded, setNavExpanded] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -26,77 +44,39 @@ export const SiteHeader: React.FC<{ mobileTitle?: string }> = ({ mobileTitle }) 
 
   useEffect(() => {
     setUserMenuOpen(false);
+    setNavExpanded(false);
   }, [location.pathname]);
 
   const pathname = location.pathname;
+  const resolvedMobileTitle = mobileTitle || (pathname === '/events' ? 'Events' : '');
   const isHome = pathname === '/';
   const isEvents = pathname.startsWith('/events') || pathname.startsWith('/o/') || pathname.startsWith('/event/');
   const isHost = pathname.startsWith('/host');
   const isContact = pathname.startsWith('/contact');
+  const isFaq = pathname.startsWith('/faq');
+  const activeCategory = new URLSearchParams(location.search).get('category')?.toLowerCase();
 
   const navItems = [
-    {
-      label: 'Home',
-      href: '/',
-      active: isHome,
-      icon: (
-        <svg fill="none" height="17" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="17">
-          <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-          <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
-        </svg>
-      ),
-    },
-    {
-      label: 'Events',
-      href: '/events',
-      active: isEvents,
-      icon: (
-        <svg fill="none" height="17" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="17">
-          <path d="M8 2v4" />
-          <path d="M16 2v4" />
-          <rect height="18" rx="2" width="18" x="3" y="4" />
-          <path d="M3 10h18" />
-          <circle cx="8" cy="14" fill="currentColor" r="1" stroke="none" />
-          <circle cx="12" cy="14" fill="currentColor" r="1" stroke="none" />
-          <circle cx="16" cy="14" fill="currentColor" r="1" stroke="none" />
-          <circle cx="8" cy="18" fill="currentColor" r="1" stroke="none" />
-          <circle cx="12" cy="18" fill="currentColor" r="1" stroke="none" />
-          <circle cx="16" cy="18" fill="currentColor" r="1" stroke="none" />
-        </svg>
-      ),
-    },
-    {
-      label: 'Host',
-      href: '/host',
-      active: isHost,
-      icon: (
-        <svg fill="none" height="17" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="17">
-          <path d="M5.8 11.3 2 22l10.7-3.79" />
-          <path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z" />
-          <path d="M4 3h.01" />
-          <path d="M22 8h.01" />
-          <path d="M15 2h.01" />
-          <path d="M22 20h.01" />
-          <path d="m14 10 1.21-1.06c0.16-0.84 0.9-1.44 1.76-1.44h0.38c0.88 0 1.55-0.77 1.45-1.63a2.9 2.9 0 0 1 1.96-3.12L22 2" />
-          <path d="M17 15h0.77c0.71 0 1.32-0.52 1.43-1.22c0.16-0.91 1.12-1.45 1.98-1.11L22 13" />
-          <path d="M9 7V6.23c0-0.71 0.52-1.33 1.22-1.43c0.91-0.16 1.45-1.12 1.11-1.98L11 2" />
-        </svg>
-      ),
-    },
-    {
-      label: 'Contact',
-      href: '/contact',
-      active: isContact,
-      icon: (
-        <svg fill="none" height="17" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="17">
-          <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
-          <path d="M8 12h.01" />
-          <path d="M12 12h.01" />
-          <path d="M16 12h.01" />
-        </svg>
-      ),
-    },
+    { label: 'Home', href: '/', active: isHome, external: false, icon: <House className="size-[17px]" /> },
+    { label: 'Events', href: '/events', active: isEvents && !activeCategory, external: false, icon: <Ticket className="size-[17px]" /> },
+    { label: 'Sports', href: '/events?category=Football', active: isEvents && activeCategory === 'football', external: false, icon: <Trophy className="size-[17px]" /> },
+    { label: 'Music', href: '/events?category=Music', active: isEvents && activeCategory === 'music', external: false, icon: <Music className="size-[17px]" /> },
+    { label: 'Outdoor', href: '/events?category=Outdoor', active: isEvents && activeCategory === 'outdoor', external: false, icon: <Trees className="size-[17px]" /> },
+    { label: 'FAQs', href: '/faq', active: isFaq, external: false, icon: <CircleHelp className="size-[17px]" /> },
+    { label: 'Support', href: '/contact', active: isContact, external: false, icon: <MessagesSquare className="size-[17px]" /> },
+    { label: 'Create', href: '/host', active: isHost, external: false, icon: <CirclePlus className="size-[17px]" /> },
   ];
+
+  const centerNavItems = navItems.filter((item) => item.label !== 'Create');
+  const utilityNavItems = navItems.filter((item) => item.label === 'Create');
+
+  const handleMobileSearch = () => {
+    if (pathname === '/events' && document.documentElement.classList.contains('ot-events-filter-docked')) {
+      window.dispatchEvent(new CustomEvent('ot:toggle-events-search'));
+      return;
+    }
+    setSearchOpen(true);
+  };
 
   return (
     <div
@@ -118,9 +98,9 @@ export const SiteHeader: React.FC<{ mobileTitle?: string }> = ({ mobileTitle }) 
               scrolled ? 'h-14' : 'h-16'
             }`}
           >
-            {/* Brand Logo */}
-            <div className="justify-self-start">
-              <Link aria-label="Open Tickets home" className="group flex w-fit items-center select-none" to="/">
+            {/* Open Tickets brand — anchored at the far left on every screen */}
+            <div className="justify-self-start lg:col-start-1 lg:row-start-1">
+              <Link aria-label="Open Tickets home" className="ot-site-brand group flex w-fit items-center select-none" to="/">
                 <img
                   alt="Open Tickets"
                   src="assets/logo/opentickets-logo-for-light.svg"
@@ -138,95 +118,109 @@ export const SiteHeader: React.FC<{ mobileTitle?: string }> = ({ mobileTitle }) 
             <div className="pointer-events-none min-w-0 overflow-hidden px-1 lg:hidden">
               <div
                 className={`transition-[opacity,transform] duration-300 ease-out ${
-                  scrolled && mobileTitle ? 'translate-y-0 opacity-100' : '-translate-y-1.5 opacity-0'
+                  scrolled && resolvedMobileTitle ? 'translate-y-0 opacity-100' : '-translate-y-1.5 opacity-0'
                 }`}
               >
                 <p className="truncate text-center text-[13px] leading-5 font-semibold tracking-tight text-foreground">
-                  {mobileTitle || ''}
+                  {resolvedMobileTitle}
                 </p>
               </div>
             </div>
 
-            {/* Desktop Primary Navigation (Ticket Stub Active Pill) */}
-            <nav aria-label="Primary navigation" className="relative hidden items-center justify-self-center lg:flex">
-              <div className="flex w-max items-center gap-1 rounded-full bg-foreground/[0.03] p-1">
-                {navItems.map((item) =>
-                  item.active ? (
-                    <Link
-                      key={item.href}
-                      to={item.href}
-                      aria-current="page"
-                      className="opentickets-nav-stub relative flex h-[38px] items-center gap-2 rounded-[11px] bg-pine pr-4 pl-3.5 text-paper shadow-[0_4px_12px_-6px_var(--pine)] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:outline-none dark:bg-volt dark:text-pine-n80 dark:shadow-[0_4px_14px_-6px_var(--volt)]"
-                    >
-                      <span>{item.icon}</span>
-                      <span className="text-[13px] font-semibold tracking-[-0.01em] whitespace-nowrap">
-                        {item.label}
-                      </span>
-                    </Link>
+            {/* Desktop primary links — always visible at the centre of the header */}
+            <nav className="hidden items-center justify-self-center lg:col-start-2 lg:row-start-1 lg:flex" aria-label="Primary navigation">
+              <div className="ot-header-center-nav">
+                {centerNavItems.map((item) => {
+                  const content = (
+                    <>
+                      {item.icon}
+                      <span aria-hidden="true" className="ot-header-center-tooltip">{item.label}</span>
+                    </>
+                  );
+                  const className = `ot-header-center-link ${item.active ? 'is-active' : ''}`;
+                  return item.external ? (
+                    <a key={item.href} href={item.href} aria-label={item.label} aria-current={item.active ? 'page' : undefined} className={className}>{content}</a>
                   ) : (
-                    <div key={item.href} className="group relative">
-                      <Link
-                        to={item.href}
-                        aria-label={item.label}
-                        className="relative flex size-[38px] items-center justify-center rounded-full text-muted-foreground transition-colors duration-200 hover:bg-foreground/8 hover:text-foreground focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:outline-none"
-                      >
-                        {item.icon}
-                      </Link>
-                      <span
-                        aria-hidden="true"
-                        className="pointer-events-none absolute top-full left-1/2 z-20 mt-1.5 -translate-x-1/2 translate-y-1 rounded-md bg-pine px-2 py-1 text-[11px] font-semibold whitespace-nowrap text-paper opacity-0 shadow-lg transition-[opacity,transform] duration-200 group-hover:translate-y-0 group-hover:opacity-100 dark:bg-volt dark:text-pine-n80"
-                      >
-                        {item.label}
-                      </span>
-                    </div>
-                  )
-                )}
+                    <Link key={item.href} to={item.href} aria-label={item.label} aria-current={item.active ? 'page' : undefined} className={className}>{content}</Link>
+                  );
+                })}
               </div>
             </nav>
 
             {/* Desktop Right Actions */}
-            <div className="hidden items-center gap-2 justify-self-end lg:flex">
-              <div className="flex items-center gap-0.5 rounded-full bg-foreground/[0.04] p-1">
-                <button
-                  type="button"
-                  onClick={() => setSearchOpen(true)}
-                  aria-label="Search events"
-                  title="Search events (⌘K)"
-                  className="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/8 hover:text-foreground cursor-pointer"
-                >
-                  <Search className="size-[18px]" />
-                </button>
-                <button
-                  type="button"
-                  onClick={toggleTheme}
-                  aria-label="Toggle theme"
-                  title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                  className="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/8 hover:text-foreground cursor-pointer"
-                >
-                  {theme === 'dark' ? <Sun className="size-[18px] text-volt" /> : <Moon className="size-[18px]" />}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMobileSimOpen(true)}
-                  aria-label="Open Mobile App System"
-                  title="Preview Mobile App System"
-                  className="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/8 hover:text-foreground cursor-pointer"
-                >
-                  <Smartphone className="size-[18px]" />
-                </button>
-                <Link
-                  to="/cart"
-                  aria-label="Open cart"
-                  className="relative inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/8 hover:text-foreground"
-                >
-                  <ShoppingBag className="size-[18px]" />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-volt px-1 text-[10px] font-extrabold text-pine-n80 shadow-sm">
-                      {cartCount}
-                    </span>
-                  )}
-                </Link>
-              </div>
+            <div className="hidden items-center gap-2 justify-self-end lg:col-start-3 lg:row-start-1 lg:flex">
+              <nav aria-label="Primary navigation and tools">
+                <div className={`ot-header-expand-shell ${navExpanded ? 'is-expanded' : ''}`}>
+                  <div id="desktop-primary-links" className={`ot-header-expand-items ${navExpanded ? 'is-open' : ''}`}>
+                    {utilityNavItems.map((item) => {
+                      const activeContent = (
+                        <>
+                          <span className="ot-header-ticket-icon">{item.icon}</span>
+                          <span className="ot-header-ticket-label">{item.label}</span>
+                          <span className="ot-header-ticket-dashes" aria-hidden="true" />
+                        </>
+                      );
+
+                      if (item.active) {
+                        return item.external ? (
+                          <a key={item.href} href={item.href} aria-current="page" onClick={() => setNavExpanded(false)} className="ot-header-ticket-active group/ticket focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none">
+                            {activeContent}
+                          </a>
+                        ) : (
+                          <Link key={item.href} to={item.href} aria-current="page" onClick={() => setNavExpanded(false)} className="ot-header-ticket-active group/ticket focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none">
+                            {activeContent}
+                          </Link>
+                        );
+                      }
+
+                      return (
+                        <div key={item.href} className="group relative shrink-0">
+                          {item.external ? (
+                            <a href={item.href} aria-label={item.label} onClick={() => setNavExpanded(false)} className="ot-header-reveal-icon">{item.icon}</a>
+                          ) : (
+                            <Link to={item.href} aria-label={item.label} onClick={() => setNavExpanded(false)} className="ot-header-reveal-icon">{item.icon}</Link>
+                          )}
+                          <span aria-hidden="true" className="ot-header-icon-tooltip">{item.label}</span>
+                        </div>
+                      );
+                    })}
+
+                    <span className="ot-header-tools-divider" aria-hidden="true" />
+
+                    <div className="group relative shrink-0">
+                      <button type="button" onClick={() => setSearchOpen(true)} aria-label="Search events" className="ot-header-reveal-icon"><Search className="size-[17px]" /></button>
+                      <span aria-hidden="true" className="ot-header-icon-tooltip">Search</span>
+                    </div>
+                    <div className="group relative shrink-0">
+                      <button type="button" onClick={toggleTheme} aria-label="Toggle theme" className="ot-header-reveal-icon">{theme === 'dark' ? <Sun className="size-[17px] text-volt" /> : <Moon className="size-[17px]" />}</button>
+                      <span aria-hidden="true" className="ot-header-icon-tooltip">Theme</span>
+                    </div>
+                    <div className="group relative shrink-0">
+                      <button type="button" onClick={() => setMobileSimOpen(true)} aria-label="Open Mobile App System" className="ot-header-reveal-icon"><Smartphone className="size-[17px]" /></button>
+                      <span aria-hidden="true" className="ot-header-icon-tooltip">Mobile view</span>
+                    </div>
+                    <div className="group relative shrink-0">
+                      <Link to="/cart" aria-label="Open cart" className="ot-header-reveal-icon">
+                        <ShoppingBag className="size-[17px]" />
+                        {cartCount > 0 && <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-volt px-1 text-[10px] font-extrabold text-pine-n80 shadow-sm">{cartCount}</span>}
+                      </Link>
+                      <span aria-hidden="true" className="ot-header-icon-tooltip">Cart</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="ot-header-nav-trigger"
+                    onClick={() => setNavExpanded((value) => !value)}
+                    aria-expanded={navExpanded}
+                    aria-controls="desktop-primary-links"
+                    aria-label={navExpanded ? 'Close navigation and tools' : 'Open navigation and tools'}
+                    title={navExpanded ? 'Close menu' : 'Open menu'}
+                  >
+                    {navExpanded ? <X className="size-[18px]" /> : <Menu className="size-[18px]" />}
+                  </button>
+                </div>
+              </nav>
 
               {user ? (
                 <div className="relative">
@@ -276,17 +270,17 @@ export const SiteHeader: React.FC<{ mobileTitle?: string }> = ({ mobileTitle }) 
                   )}
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5">
+                <div className="flex shrink-0 items-center gap-1.5">
                   <Link
                     to="/profile/tickets"
-                    className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border/80 bg-surface px-3.5 text-[13px] font-semibold text-foreground transition-colors hover:border-accent/50 hover:bg-accent/10"
+                    className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border/80 bg-surface px-3.5 text-[13px] font-semibold whitespace-nowrap text-foreground transition-colors hover:border-accent/50 hover:bg-accent/10"
                   >
                     <Ticket className="size-3.5 text-accent-emphasis" />
                     My Tickets
                   </Link>
                   <Link
                     to="/login"
-                    className="opentickets-glow inline-flex h-9 items-center justify-center rounded-full px-4 text-[13px] font-semibold"
+                    className="opentickets-glow inline-flex h-9 items-center justify-center rounded-full px-4 text-[13px] font-semibold whitespace-nowrap"
                   >
                     Sign in
                   </Link>
@@ -298,9 +292,9 @@ export const SiteHeader: React.FC<{ mobileTitle?: string }> = ({ mobileTitle }) 
             <div className="flex items-center gap-1 justify-self-end lg:hidden">
               <button
                 type="button"
-                onClick={() => setSearchOpen(true)}
-                aria-label="Search events"
-                className="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground cursor-pointer"
+                onClick={handleMobileSearch}
+                aria-label={pathname === '/events' ? 'Search events on this page' : 'Search events'}
+                className="ot-mobile-header-search inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-all duration-300 hover:bg-foreground/5 hover:text-foreground cursor-pointer"
               >
                 <Search className="size-[18px]" />
               </button>

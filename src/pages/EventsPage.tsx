@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ChevronDown, Search, X } from 'lucide-react';
 import { CATEGORIES, EVENTS } from '../data/events';
@@ -14,11 +14,69 @@ export const EventsPage: React.FC = () => {
   const [category, setCategory] = useState<string>(initialCategory);
   const [sortBy, setSortBy] = useState<string>('soonest');
   const [visibleCount, setVisibleCount] = useState<number>(12);
+  const [mobileFilterDocked, setMobileFilterDocked] = useState(false);
+  const [mobileFilterHidden, setMobileFilterHidden] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const filterStickyRef = useRef<HTMLElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const touchStartYRef = useRef(0);
+  const lastScrollYRef = useRef(0);
+  const filterDockedAtYRef = useRef(0);
+  const wasFilterDockedRef = useRef(false);
 
   useEffect(() => {
     const urlCat = searchParams.get('category') || 'All';
     setCategory(urlCat);
   }, [searchParams]);
+
+  useEffect(() => {
+    const updateDockedFilter = () => {
+      const filter = filterStickyRef.current;
+      const currentY = window.scrollY;
+      const docked = Boolean(filter && window.innerWidth <= 540 && currentY > 0 && filter.getBoundingClientRect().top <= 69);
+
+      if (docked && !wasFilterDockedRef.current) filterDockedAtYRef.current = currentY;
+      if (!docked) {
+        setMobileFilterHidden(false);
+      }
+      if (docked && !mobileFilterHidden && currentY > filterDockedAtYRef.current + 90) {
+        setMobileFilterHidden(true);
+      }
+      if (docked && mobileFilterHidden && currentY < lastScrollYRef.current - 6) {
+        setMobileFilterHidden(false);
+        filterDockedAtYRef.current = currentY;
+      }
+
+      wasFilterDockedRef.current = docked;
+      lastScrollYRef.current = currentY;
+      setMobileFilterDocked(docked);
+      document.documentElement.classList.toggle('ot-events-filter-docked', docked);
+      document.documentElement.classList.toggle('ot-events-filter-hidden', docked && mobileFilterHidden);
+    };
+
+    updateDockedFilter();
+    window.addEventListener('scroll', updateDockedFilter, { passive: true });
+    window.addEventListener('resize', updateDockedFilter);
+    return () => {
+      window.removeEventListener('scroll', updateDockedFilter);
+      window.removeEventListener('resize', updateDockedFilter);
+      document.documentElement.classList.remove('ot-events-filter-docked', 'ot-events-filter-hidden');
+    };
+  }, [mobileFilterHidden]);
+
+  useEffect(() => {
+    const togglePageSearch = () => {
+      setMobileFilterHidden(false);
+      setMobileSearchOpen((open) => {
+        const next = !open;
+        if (next) window.setTimeout(() => searchInputRef.current?.focus({ preventScroll: true }), 150);
+        return next;
+      });
+    };
+
+    window.addEventListener('ot:toggle-events-search', togglePageSearch);
+    return () => window.removeEventListener('ot:toggle-events-search', togglePageSearch);
+  }, []);
 
   const handleCategoryChange = (nextCat: string) => {
     setCategory(nextCat);
@@ -55,100 +113,99 @@ export const EventsPage: React.FC = () => {
     <main id="main-content" className="flex-1 bg-background py-8 text-foreground sm:py-12">
       <h1 className="sr-only">Events on Open Tickets</h1>
 
-      <div className="mx-auto w-full max-w-7xl space-y-8 px-4 sm:px-6">
-        {/* Sticky Frosted Glass Filter Bar (100% Open Tickets /events design) */}
-        <section className="sticky top-[4.25rem] z-30">
-          <div className="relative overflow-visible rounded-[24px] border border-border/70 bg-surface/85 p-3 shadow-overlay backdrop-blur-2xl backdrop-saturate-150 sm:p-4 dark:bg-surface/80">
-            <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-paper/50 to-transparent dark:via-paper/20" />
+      <div className="mx-auto w-full max-w-7xl space-y-5 px-4 sm:px-6">
+        {/* AI event panorama scrolls away normally */}
+        <section className="ot-events-ai-banner" aria-label="Live events across South Africa">
+          <img src="media/events-filter-banner-ai.jpg" alt="Concerts, football, festivals and community events across South Africa" />
+          <div className="ot-events-ai-banner-shade" aria-hidden="true" />
+          <div className="ot-events-ai-banner-copy">
+            <span>ALL EXPERIENCES · ONE PLACE</span>
+            <strong>Find your kind of live.</strong>
+          </div>
+          <span className="ot-events-ai-banner-code" aria-hidden="true">OT / EXPLORE / ZA</span>
+        </section>
 
-            <form
-              onSubmit={(e) => e.preventDefault()}
-              className="grid grid-cols-2 gap-3 lg:grid-cols-[minmax(18rem,1.3fr)_minmax(8rem,0.6fr)_minmax(9rem,0.7fr)_minmax(9rem,0.7fr)] lg:items-end"
-            >
-              {/* Search Input */}
-              <div className="relative col-span-2 min-w-0 lg:col-span-1">
-                <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search events or organizers"
-                  className="h-12 w-full rounded-xl border border-border/80 bg-background/75 pr-12 pl-10 text-sm font-medium text-foreground placeholder:text-muted-foreground outline-none transition-colors hover:border-accent/45 focus:border-accent"
-                />
-                {query ? (
-                  <button
-                    type="button"
-                    onClick={() => setQuery('')}
-                    aria-label="Clear search"
-                    className="absolute top-1/2 right-2 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground hover:bg-foreground/8 cursor-pointer"
-                  >
-                    <X className="size-4" />
-                  </button>
-                ) : (
-                  <button
-                    type="submit"
-                    aria-label="Search events"
-                    className="absolute top-1/2 right-1.5 grid size-9 -translate-y-1/2 place-items-center rounded-lg bg-primary text-primary-foreground shadow-sm cursor-pointer"
-                  >
-                    <Search className="size-4" />
-                  </button>
-                )}
-              </div>
+        {/* Glass filters stay pinned under the normal sticky site header */}
+        <section
+          ref={filterStickyRef}
+          className={`ot-events-filter-sticky ${mobileFilterDocked ? 'is-mobile-docked' : ''} ${mobileFilterHidden ? 'is-mobile-hidden' : ''} ${mobileSearchOpen ? 'is-mobile-search-open' : ''}`}
+          aria-label="Event filters"
+          onTouchStart={(event) => { touchStartYRef.current = event.touches[0]?.clientY ?? 0; }}
+          onTouchEnd={(event) => {
+            const endY = event.changedTouches[0]?.clientY ?? touchStartYRef.current;
+            if (mobileFilterDocked && touchStartYRef.current - endY > 32) setMobileFilterHidden(true);
+          }}
+          onPointerDown={(event) => {
+            if (event.pointerType === 'touch') touchStartYRef.current = event.clientY;
+          }}
+          onPointerUp={(event) => {
+            if (event.pointerType === 'touch' && mobileFilterDocked && touchStartYRef.current - event.clientY > 32) {
+              setMobileFilterHidden(true);
+            }
+          }}
+        >
+          <div className="ot-event-filter-ticket">
+            <span className="ot-filter-notch ot-filter-notch-left" aria-hidden="true" />
+            <span className="ot-filter-notch ot-filter-notch-right" aria-hidden="true" />
 
-              {/* Status Select */}
-              <div className="relative min-w-0">
-                <span className="sr-only">Status</span>
-                <span className="pointer-events-none absolute top-1/2 left-3 size-2.5 -translate-y-1/2 rounded-full bg-accent" />
-                <select
-                  aria-label="Status"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="h-12 w-full appearance-none rounded-xl border border-border/80 bg-background/75 pr-9 pl-8 text-sm font-semibold text-foreground outline-none transition-colors hover:border-accent/45 focus:border-accent cursor-pointer"
-                >
-                  <option value="All">All statuses</option>
-                  <option value="Live">Live now</option>
-                  <option value="Upcoming">Upcoming</option>
-                  <option value="Selling Fast">Selling fast</option>
-                  <option value="Past">Past events</option>
-                </select>
-                <ChevronDown className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground" />
-              </div>
+            <form onSubmit={(e) => e.preventDefault()} className="ot-filter-grid">
+              <label className="ot-filter-field ot-filter-search-field">
+                <span className="ot-filter-label">Search</span>
+                <span className="ot-filter-control-wrap">
+                  <Search className="ot-filter-leading-icon" />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Events, venues or organizers"
+                    className="ot-filter-control ot-filter-search-input"
+                  />
+                  {query ? (
+                    <button type="button" onClick={() => setQuery('')} aria-label="Clear search" className="ot-filter-clear"><X className="size-4" /></button>
+                  ) : (
+                    <button type="submit" aria-label="Search events" className="ot-filter-submit"><Search className="size-4" /></button>
+                  )}
+                </span>
+              </label>
 
-              {/* Category Select */}
-              <div className="relative min-w-0">
-                <span className="sr-only">Category</span>
-                <select
-                  aria-label="Category"
-                  value={category}
-                  onChange={(e) => handleCategoryChange(e.target.value)}
-                  className="h-12 w-full appearance-none rounded-xl border border-border/80 bg-background/75 pr-9 pl-3.5 text-sm font-semibold text-foreground outline-none transition-colors hover:border-accent/45 focus:border-accent cursor-pointer"
-                >
-                  <option value="All">All categories</option>
-                  {CATEGORIES.map((c) => (
-                    <option key={c.name} value={c.name}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground" />
-              </div>
+              <label className="ot-filter-field">
+                <span className="ot-filter-label"><i className="ot-filter-live-dot" />Status</span>
+                <span className="ot-filter-control-wrap">
+                  <select aria-label="Status" value={status} onChange={(e) => setStatus(e.target.value)} className="ot-filter-control">
+                    <option value="All">All statuses</option>
+                    <option value="Live">Live now</option>
+                    <option value="Upcoming">Upcoming</option>
+                    <option value="Selling Fast">Selling fast</option>
+                    <option value="Past">Past events</option>
+                  </select>
+                  <ChevronDown className="ot-filter-chevron" />
+                </span>
+              </label>
 
-              {/* Sort Select */}
-              <div className="relative col-span-2 min-w-0 sm:col-span-1">
-                <span className="sr-only">Sort</span>
-                <select
-                  aria-label="Sort"
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="h-12 w-full appearance-none rounded-xl border border-border/80 bg-background/75 pr-9 pl-3.5 text-sm font-semibold text-foreground outline-none transition-colors hover:border-accent/45 focus:border-accent cursor-pointer"
-                >
-                  <option value="soonest">Soonest first</option>
-                  <option value="latest">Latest first</option>
-                  <option value="price-asc">Price: Low to High</option>
-                  <option value="price-desc">Price: High to Low</option>
-                </select>
-                <ChevronDown className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground" />
-              </div>
+              <label className="ot-filter-field">
+                <span className="ot-filter-label">Category</span>
+                <span className="ot-filter-control-wrap">
+                  <select aria-label="Category" value={category} onChange={(e) => handleCategoryChange(e.target.value)} className="ot-filter-control">
+                    <option value="All">All categories</option>
+                    {CATEGORIES.map((c) => <option key={c.name} value={c.name}>{c.name}</option>)}
+                  </select>
+                  <ChevronDown className="ot-filter-chevron" />
+                </span>
+              </label>
+
+              <label className="ot-filter-field ot-filter-sort-field">
+                <span className="ot-filter-label">Sort by</span>
+                <span className="ot-filter-control-wrap">
+                  <select aria-label="Sort" value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="ot-filter-control">
+                    <option value="soonest">Soonest first</option>
+                    <option value="latest">Latest first</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                  </select>
+                  <ChevronDown className="ot-filter-chevron" />
+                </span>
+              </label>
             </form>
           </div>
         </section>

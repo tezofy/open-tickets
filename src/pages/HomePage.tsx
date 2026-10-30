@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
@@ -21,6 +21,7 @@ import {
   Music,
   Presentation,
   Rocket,
+  Search,
   Shirt,
   Sparkles,
   Ticket,
@@ -28,50 +29,159 @@ import {
   Users,
   Wrench,
 } from 'lucide-react';
-import { CATEGORIES, EVENTS, getEventHref, POSTER_WALL_COLUMNS } from '../data/events';
+import { EVENTS, getEventHref, POSTER_WALL_COLUMNS } from '../data/events';
 import { OpenTicketsCard } from '../components/OpenTicketsCard';
 import { OrganizerCtaBand } from '../components/OrganizerCtaBand';
-import { useApp } from '../context/AppContext';
 
-const CATEGORY_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  mic: MicVocal,
-  trophy: Trophy,
-  Drama: Drama,
-  wrench: Wrench,
-  heart: Heart,
-  sparkles: Sparkles,
-  award: Award,
-  shirt: Shirt,
-  users: Users,
-  presentation: Presentation,
-  handshake: Handshake,
-  frame: Frame,
-  rocket: Rocket,
-  clapperboard: Clapperboard,
-  disc: Disc3,
-  flame: Flame,
-  music: Music,
-  headphones: Headphones,
+const HOME_QUICK_CATEGORIES = [
+  { name: 'Music', icon: Music },
+  { name: 'Football', icon: Trophy },
+  { name: 'Festival', icon: Sparkles },
+  { name: 'Community', icon: Users },
+  { name: 'Family', icon: Heart },
+  { name: 'Business', icon: Presentation },
+];
+
+const AI_HERO_SLIDES = [
+  { id: 'ai-concert', image: 'media/hero-ai-concert.jpg', squareImage: 'media/hero-ai-concert.jpg', eyebrow: 'LIVE MUSIC', title: 'Feel every beat.', subtitle: 'Big stages, electric nights and unforgettable performances.' },
+  { id: 'ai-football', image: 'media/hero-ai-football.jpg', squareImage: 'media/hero-ai-football.jpg', eyebrow: 'MATCH DAY', title: 'Where the crowd comes alive.', subtitle: 'Be there for every chant, goal and stadium moment.' },
+  { id: 'ai-festival', image: 'media/hero-ai-festival.jpg', squareImage: 'media/hero-ai-festival.jpg', eyebrow: 'FESTIVALS', title: 'Make a weekend of it.', subtitle: 'Music, culture and good people under an open sky.' },
+  { id: 'ai-family', image: 'media/hero-ai-family.jpg', squareImage: 'media/hero-ai-family.jpg', eyebrow: 'FAMILY & COMMUNITY', title: 'Good times, all together.', subtitle: 'Local experiences made for every generation.' },
+  { id: 'ai-outdoor', image: 'media/hero-ai-outdoor.jpg', squareImage: 'media/hero-ai-outdoor.jpg', eyebrow: 'OUTDOOR', title: 'Go beyond the ordinary.', subtitle: 'Fresh air, bold routes and stories worth bringing home.' },
+];
+
+interface PremiumNumberTicketProps {
+  value: string;
+  label: string;
+  description: string;
+  index: number;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const PremiumNumberTicket: React.FC<PremiumNumberTicketProps> = ({
+  value,
+  label,
+  description,
+  index,
+  icon: Icon,
+}) => {
+  const cardRef = useRef<HTMLElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [displayValue, setDisplayValue] = useState(/^\d+$/.test(value) ? '0' : value);
+
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.28 },
+    );
+    observer.observe(card);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible || !/^\d+$/.test(value)) return;
+    const target = Number(value);
+    const duration = 900;
+    const startedAt = performance.now();
+    let frame = 0;
+
+    const tick = (now: number) => {
+      const progress = Math.min((now - startedAt) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayValue(String(Math.round(target * eased)));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [isVisible, value]);
+
+  const updateSpotlight = (event: React.PointerEvent<HTMLElement>) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    event.currentTarget.style.setProperty('--spot-x', `${event.clientX - bounds.left}px`);
+    event.currentTarget.style.setProperty('--spot-y', `${event.clientY - bounds.top}px`);
+    event.currentTarget.style.setProperty('--spot-opacity', '1');
+  };
+
+  const hideSpotlight = (event: React.PointerEvent<HTMLElement>) => {
+    event.currentTarget.style.setProperty('--spot-opacity', '0');
+  };
+
+  const code = `OT-ZA-${String(index + 1).padStart(2, '0')}${String(value).padStart(2, '0')}`;
+
+  return (
+    <article
+      ref={cardRef}
+      onPointerMove={updateSpotlight}
+      onPointerLeave={hideSpotlight}
+      style={{ transitionDelay: `${index * 90}ms` }}
+      className={`ot-number-ticket ${index === 0 ? 'ot-number-ticket-featured' : ''} ${isVisible ? 'is-visible' : ''}`}
+    >
+      <span className="ot-number-cut ot-number-cut-top" aria-hidden="true" />
+      <span className="ot-number-cut ot-number-cut-bottom" aria-hidden="true" />
+
+      <div className="ot-number-ticket-main">
+        <div className="ot-number-ticket-topline">
+          <span className="ot-number-icon"><Icon className="size-4" /></span>
+          <span className="ot-number-index">0{index + 1}</span>
+        </div>
+        <p className="ot-number-value" aria-label={value}>{displayValue}</p>
+        <p className="ot-number-label">{label}</p>
+        <p className="ot-number-copy">{description}</p>
+      </div>
+
+      <div className="ot-number-ticket-stub" aria-hidden="true">
+        <span className="ot-number-code">{code}</span>
+        <span className="ot-number-barcode" />
+      </div>
+    </article>
+  );
 };
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { setStoryEventId } = useApp();
-  const heroSlides = EVENTS.filter((e) => e.featuredInHero);
-  const happeningStories = EVENTS.filter((e) => e.happeningNow);
+  const heroSlides = AI_HERO_SLIDES;
 
   const [slideIdx, setSlideIdx] = useState(0);
+  const [previousSlideIdx, setPreviousSlideIdx] = useState<number | null>(null);
   const [heroPaused, setHeroPaused] = useState(false);
+  const [heroQuery, setHeroQuery] = useState('');
+  const heroTransitionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const changeHeroSlide = (nextIndex: number) => {
+    if (nextIndex === slideIdx || heroSlides.length <= 1) return;
+    setPreviousSlideIdx(slideIdx);
+    setSlideIdx(nextIndex);
+    if (heroTransitionTimer.current) clearTimeout(heroTransitionTimer.current);
+    heroTransitionTimer.current = setTimeout(() => setPreviousSlideIdx(null), 1450);
+  };
 
   useEffect(() => {
     if (heroPaused || heroSlides.length <= 1) return;
     const t = setInterval(() => {
-      setSlideIdx((prev) => (prev + 1) % heroSlides.length);
+      changeHeroSlide((slideIdx + 1) % heroSlides.length);
     }, 4800);
     return () => clearInterval(t);
-  }, [heroPaused, heroSlides.length]);
+  }, [heroPaused, heroSlides.length, slideIdx]);
 
-  const activeSlide = heroSlides[slideIdx] || heroSlides[0];
+  useEffect(() => () => {
+    if (heroTransitionTimer.current) clearTimeout(heroTransitionTimer.current);
+  }, []);
+
+  const submitHeroSearch = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const query = heroQuery.trim();
+    navigate(query ? `/events?q=${encodeURIComponent(query)}` : '/events');
+  };
 
   return (
     <main id="main-content" className="flex-1 bg-background text-foreground">
@@ -81,92 +191,85 @@ export const HomePage: React.FC = () => {
       <section
         aria-label="Featured events"
         aria-roledescription="carousel"
-        className="mx-auto w-full max-w-7xl px-3 pt-4 sm:px-10 sm:pt-8 lg:px-14"
+        className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-6 sm:pt-8"
         onMouseEnter={() => setHeroPaused(true)}
         onMouseLeave={() => setHeroPaused(false)}
       >
-        <div className="relative group/hero">
+        <div className="ot-home-hero-shell group/hero">
           <div
-            onClick={() => navigate(getEventHref(activeSlide))}
+            onClick={() => navigate('/events')}
             role="link"
             tabIndex={0}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') navigate(getEventHref(activeSlide));
+              if (e.key === 'Enter') navigate('/events');
             }}
-            className="relative aspect-[8/9] w-full cursor-pointer overflow-hidden rounded-[22px] bg-pine-n80 text-paper shadow-[0_20px_40px_rgba(0,0,0,0.18)] sm:aspect-[16/6] sm:rounded-[28px] focus-visible:ring-2 focus-visible:ring-volt focus-visible:outline-none"
+            className="ot-home-hero-ticket"
           >
+            <span className="ot-home-hero-edge-cut ot-home-hero-edge-cut-left" aria-hidden="true" />
+            <span className="ot-home-hero-edge-cut ot-home-hero-edge-cut-right" aria-hidden="true" />
             {heroSlides.map((slide, idx) => (
-              <div
+              <article
                 key={slide.id}
                 aria-hidden={idx !== slideIdx}
-                className={`absolute inset-0 transition-opacity duration-700 ease-out ${
-                  idx === slideIdx ? 'z-10 opacity-100' : 'z-0 opacity-0 pointer-events-none'
-                }`}
+                className={`ot-home-hero-slide ${idx === slideIdx ? 'is-active' : ''} ${idx === previousSlideIdx ? 'is-leaving' : ''}`}
               >
-                {/* Mobile 8:9 Square/Portrait Cover */}
-                <img
-                  src={slide.squareImage}
-                  alt={slide.title}
-                  className="h-full w-full object-cover sm:hidden"
-                />
-                {/* Desktop 16:6 Wide Cover */}
-                <img
-                  src={slide.bannerImage}
-                  alt={slide.title}
-                  className="hidden h-full w-full object-cover sm:block"
-                />
-
-                {/* Bottom Cinematic Scrim + Date & Title */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-bold tracking-wide text-volt backdrop-blur-md">
-                    {slide.heroDateLabel}
-                  </span>
-                  <h2 className="mt-2 max-w-2xl font-heading text-lg leading-snug font-extrabold tracking-tight text-white drop-shadow-sm sm:text-2xl lg:text-3xl">
-                    {slide.title}
-                  </h2>
+                <div className="ot-home-hero-media">
+                  <img src={slide.image} alt={slide.title} className="ot-home-hero-image" />
+                  <div className="ot-home-hero-scrim" aria-hidden="true" />
+                  <div className="ot-home-hero-media-topline">
+                    <span><Sparkles className="size-3" /> AI curated experience</span>
+                    <small>OPEN TICKETS · ZA</small>
+                  </div>
+                  <div className="ot-home-hero-media-copy">
+                    <span>{slide.eyebrow}</span>
+                    <strong>{slide.title}</strong>
+                    <p>{slide.subtitle}</p>
+                  </div>
+                  <span className="ot-home-hero-slide-count">{String(idx + 1).padStart(2, '0')} / {String(heroSlides.length).padStart(2, '0')}</span>
                 </div>
-              </div>
+              </article>
             ))}
 
-            {/* Left / Right Controls */}
+            <div className="ot-home-mobile-static-tools" onClick={(event) => event.stopPropagation()}>
+              <form className="ot-home-hero-mobile-search" onSubmit={submitHeroSearch}>
+                <Search className="size-4" />
+                <input value={heroQuery} onChange={(event) => setHeroQuery(event.target.value)} placeholder="Search events" aria-label="Search events" />
+                <button type="submit" aria-label="Submit search"><ArrowRight className="size-4" /></button>
+              </form>
+
+            </div>
+
             <button
               type="button"
-              aria-label="Previous slide"
+              aria-label="Previous featured event"
               onClick={(e) => {
                 e.stopPropagation();
-                setSlideIdx((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+                changeHeroSlide((slideIdx - 1 + heroSlides.length) % heroSlides.length);
               }}
-              className="absolute top-1/2 left-3 z-20 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white backdrop-blur-md transition-opacity hover:bg-black/70 sm:left-4 sm:size-10 sm:opacity-0 sm:group-hover/hero:opacity-100 cursor-pointer"
+              className="ot-home-hero-nav ot-home-hero-nav-prev"
             >
               <ChevronLeft className="size-5" />
             </button>
             <button
               type="button"
-              aria-label="Next slide"
+              aria-label="Next featured event"
               onClick={(e) => {
                 e.stopPropagation();
-                setSlideIdx((prev) => (prev + 1) % heroSlides.length);
+                changeHeroSlide((slideIdx + 1) % heroSlides.length);
               }}
-              className="absolute top-1/2 right-3 z-20 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white backdrop-blur-md transition-opacity hover:bg-black/70 sm:right-4 sm:size-10 sm:opacity-0 sm:group-hover/hero:opacity-100 cursor-pointer"
+              className="ot-home-hero-nav ot-home-hero-nav-next"
             >
               <ChevronRight className="size-5" />
             </button>
 
-            {/* Pagination Dots */}
-            <div
-              className="absolute right-5 bottom-5 z-20 hidden items-center gap-1.5 sm:flex"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {heroSlides.map((s, idx) => (
+            <div className="ot-home-hero-pagination" onClick={(e) => e.stopPropagation()}>
+              {heroSlides.map((slide, idx) => (
                 <button
-                  key={s.id}
+                  key={slide.id}
                   type="button"
-                  aria-label={`Slide ${idx + 1}`}
-                  onClick={() => setSlideIdx(idx)}
-                  className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                    idx === slideIdx ? 'w-6 bg-volt' : 'w-1.5 bg-white/45 hover:bg-white/75'
-                  }`}
+                  aria-label={`Show ${slide.title}`}
+                  onClick={() => changeHeroSlide(idx)}
+                  className={idx === slideIdx ? 'is-active' : ''}
                 />
               ))}
             </div>
@@ -174,105 +277,29 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. BROWSE YOUR WAY (OPENTICKETS VERTICAL NOTCHED TICKETS MARQUEE) */}
-      <section aria-labelledby="home-categories-title" className="mt-6 overflow-x-hidden pt-5 sm:mt-8 sm:pt-7">
-        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
-          <div className="flex items-center justify-between gap-4">
-            <h2 id="home-categories-title" className="truncate text-lg font-bold text-foreground sm:text-xl">
-              Browse your way
-            </h2>
-          </div>
-        </div>
+      <section className="ot-home-discovery-tools" aria-label="Search and event categories">
+        <form className="ot-home-hero-search" onSubmit={submitHeroSearch}>
+          <Search className="size-5" />
+          <input value={heroQuery} onChange={(event) => setHeroQuery(event.target.value)} placeholder="Search events, venues or organizers" aria-label="Search events, venues or organizers" />
+          <button type="submit">Search events <ArrowRight className="size-4" /></button>
+        </form>
 
-        <div className="opentickets-rail relative mx-auto mt-5 max-w-7xl overflow-x-auto no-scrollbar sm:mt-6">
-          <div className="opentickets-marquee-track pt-2 pb-8">
-            {[0, 1].map((dup) => (
-              <div key={dup} className="flex shrink-0 gap-3 pr-3 sm:gap-4 sm:pr-4">
-                {CATEGORIES.map((cat) => {
-                  const IconComp = CATEGORY_ICON_MAP[cat.lucideKey] || Sparkles;
-                  return (
-                    <Link
-                      key={`${dup}-${cat.name}`}
-                      to={`/events?category=${encodeURIComponent(cat.name)}`}
-                      className="opentickets-ticket group relative isolate block aspect-[4/5] w-[148px] shrink-0 rounded-2xl [filter:drop-shadow(0_10px_16px_rgb(4_14_14/0.16))] transition-transform duration-200 hover:-translate-y-1 sm:w-44 sm:rounded-[22px] dark:[filter:drop-shadow(0_10px_16px_rgb(0_0_0/0.55))]"
-                    >
-                      <div className="opentickets-ticket-body absolute inset-0 overflow-hidden rounded-[inherit] bg-surface">
-                        <div className="absolute inset-x-0 top-0 h-[72%] overflow-hidden bg-pine-n80">
-                          <span className="absolute inset-1/4 flex items-center justify-center">
-                            {cat.iconPng ? (
-                              <img
-                                src={cat.iconPng}
-                                alt=""
-                                draggable={false}
-                                className="h-full w-full object-contain brightness-0 invert transition-transform duration-200 group-hover:scale-110"
-                              />
-                            ) : (
-                              <IconComp className="size-12 text-white transition-transform duration-200 group-hover:scale-110" />
-                            )}
-                          </span>
-                          <div className="absolute inset-0 bg-gradient-to-t from-pine-n80/45 via-transparent to-transparent" />
-                          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-volt/25 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-                        </div>
-
-                        <span
-                          aria-hidden="true"
-                          className="opentickets-ticket-perforation pointer-events-none absolute inset-x-2 top-[72%] h-px"
-                        />
-
-                        <span className="absolute inset-x-0 top-[72%] bottom-0 flex items-center gap-2 px-3 sm:px-3.5">
-                          <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-accent/15 text-accent-emphasis sm:size-8 dark:text-volt">
-                            <IconComp className="size-3.5 sm:size-4" />
-                          </span>
-                          <span className="min-w-0 flex-1 truncate text-[13px] font-semibold tracking-tight text-foreground sm:text-sm">
-                            {cat.name}
-                          </span>
-                          <ArrowUpRight className="size-4 shrink-0 text-muted-foreground transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent-emphasis dark:group-hover:text-volt" />
-                        </span>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        </div>
+        <nav className="ot-home-category-links" aria-label="Event categories">
+          {HOME_QUICK_CATEGORIES.map(({ name, icon: Icon }) => (
+            <Link key={name} to={`/events?category=${encodeURIComponent(name)}`}>
+              <span><Icon className="size-4" /></span>
+              <small>{name}</small>
+            </Link>
+          ))}
+        </nav>
       </section>
 
       {/* MAIN CONTAINER: HAPPENING NOW + ON SALE NOW (OPENTICKETS CARDS) + STATS */}
       <div className="mx-auto w-full max-w-7xl space-y-14 px-4 pt-6 sm:space-y-16 sm:px-6 sm:pt-8">
-        {/* 3. HAPPENING NOW (STORY RINGS) */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="truncate text-lg font-bold text-foreground sm:text-xl">Happening now</h2>
-          </div>
-
-          <div className="-mx-4 flex gap-3.5 overflow-x-auto no-scrollbar px-4 py-2 sm:mx-0 sm:px-0">
-            {happeningStories.map((st) => (
-              <button
-                key={st.id}
-                type="button"
-                onClick={() => setStoryEventId(st.id)}
-                className="group flex w-16 shrink-0 flex-col items-center gap-1.5 focus-visible:outline-none sm:w-20 cursor-pointer"
-              >
-                <span className="relative inline-block rounded-full bg-gradient-to-tr from-volt via-pine to-volt p-[2.5px] transition-transform duration-200 group-hover:scale-105">
-                  <span className="block rounded-full bg-background p-[2px]">
-                    <span className="relative block size-14 overflow-hidden rounded-full sm:size-16">
-                      <img src={st.squareImage} alt={st.title} className="h-full w-full object-cover" />
-                    </span>
-                  </span>
-                </span>
-                <span className="w-full truncate text-center text-[11px] font-medium text-foreground/85">
-                  {st.title}
-                </span>
-              </button>
-            ))}
-          </div>
-        </section>
-
         {/* 4. ON SALE NOW — USING OPENTICKETS.CO.ZA EVENT CARD DESIGN */}
         <section className="space-y-6">
           <div className="flex items-center justify-between gap-4">
-            <h2 className="truncate text-lg font-bold text-foreground sm:text-xl">On sale now</h2>
+            <h2 className="truncate text-lg font-bold text-foreground sm:text-xl">Tickets available now</h2>
             <Link
               to="/events"
               className="group inline-flex items-center gap-1.5 rounded-full bg-foreground/[0.04] px-3.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-accent/15 hover:text-accent-emphasis sm:text-sm"
@@ -290,78 +317,76 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* 5. OPENTICKETS IN NUMBERS */}
-        <section className="space-y-6">
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="truncate text-lg font-bold text-foreground sm:text-xl">Open Tickets in numbers</h2>
+        {/* 5. OPENTICKETS IN NUMBERS — TICKET COUNTER BOARD */}
+        <section className="ot-numbers-panel" aria-labelledby="numbers-title">
+          <div className="ot-numbers-glow" aria-hidden="true" />
+          <div className="ot-numbers-header">
+            <div>
+              <span className="ot-numbers-eyebrow">
+                <span className="ot-numbers-live-dot" />
+                Live platform snapshot
+              </span>
+              <h2 id="numbers-title" className="ot-numbers-title">Open Tickets in numbers</h2>
+              <p className="ot-numbers-intro">A quick look at what is happening across our ticketing network.</p>
+            </div>
+            <div className="ot-numbers-mark" aria-hidden="true">
+              <Ticket className="size-5" />
+              <span>OT / 2026</span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+          <div className="ot-numbers-grid">
             {[
               {
                 num: String(EVENTS.length),
-                suffix: '',
                 label: 'Listed events',
-                desc: 'Events in the public Open Tickets catalogue snapshot bundled with this project.',
+                short: 'Events ready to discover',
                 icon: Calendar,
               },
               {
                 num: String(new Set(EVENTS.map((event) => event.venue)).size),
-                suffix: '',
                 label: 'Venues',
-                desc: 'Distinct event venues appearing in the bundled listings.',
+                short: 'Places bringing people together',
                 icon: MapPin,
               },
               {
                 num: String(EVENTS.reduce((total, event) => total + event.ticketTiers.length, 0)),
-                suffix: '',
                 label: 'Ticket categories',
-                desc: 'Categories shown on the source event pages at capture time.',
+                short: 'Ways to find your perfect seat',
                 icon: Ticket,
               },
               {
                 num: 'ZA',
-                suffix: '',
-                label: 'Market',
-                desc: 'Events and venues listed on the South African Open Tickets website.',
+                label: 'South Africa',
+                short: 'One growing live-events market',
                 icon: Building2,
               },
-            ].map((stat) => {
-              const Icon = stat.icon;
-              return (
-                <div
-                  key={stat.label}
-                  className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-b from-volt-80 to-surface p-4 sm:rounded-3xl sm:p-5 dark:from-pine-n40 dark:to-pine-n80"
-                >
-                  {/* Decorative Grid Pattern */}
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 opacity-30 [background-image:linear-gradient(to_right,currentColor_1px,transparent_1px),linear-gradient(to_bottom,currentColor_1px,transparent_1px)] [background-size:20px_20px] [mask-image:radial-gradient(farthest-side_at_top_right,white,transparent)] text-volt-n40 dark:text-white/25"
-                  />
-
-                  <span className="relative z-20 grid size-8 place-items-center rounded-lg bg-pine text-volt shadow-sm dark:bg-volt dark:text-pine-n80">
-                    <Icon className="size-4" />
-                  </span>
-                  <p className="relative z-20 mt-3.5 font-heading text-[28px] leading-none font-bold text-foreground sm:text-[34px]">
-                    {stat.num}
-                    {stat.suffix && <span className="text-accent-emphasis">{stat.suffix}</span>}
-                  </p>
-                  <p className="relative z-20 mt-1.5 text-[10px] font-bold text-accent-emphasis sm:text-[11px]">
-                    {stat.label}
-                  </p>
-                  <p className="relative z-20 mt-1.5 text-[12px] leading-snug text-muted-foreground">
-                    {stat.desc}
-                  </p>
-                </div>
-              );
-            })}
+            ].map((stat, index) => (
+              <PremiumNumberTicket
+                key={stat.label}
+                value={stat.num}
+                label={stat.label}
+                description={stat.short}
+                icon={stat.icon}
+                index={index}
+              />
+            ))}
           </div>
         </section>
       </div>
 
       {/* 6. 3D TILTED POSTER WALL ("YOUR TICKET TO WHAT'S ON, IN A COUPLE OF TAPS.") */}
       <div className="mx-auto mt-14 w-full max-w-7xl px-4 sm:mt-16 sm:px-6">
-        <section className="relative w-full overflow-hidden rounded-2xl border border-border/70 bg-background sm:rounded-[28px]">
+        <section className="ot-poster-ticket-cta">
+          <span aria-hidden="true" className="ot-poster-ticket-notch ot-poster-ticket-notch-left" />
+          <span aria-hidden="true" className="ot-poster-ticket-notch ot-poster-ticket-notch-right" />
+          <span aria-hidden="true" className="ot-poster-ticket-perforation" />
+          <span aria-hidden="true" className="ot-poster-ticket-stub">
+            <Ticket className="size-4" />
+            <span>ADMIT ONE</span>
+            <small>OT · DISCOVER · 2026</small>
+          </span>
+
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="flex h-full w-full items-center justify-center">
               <div className="h-[1100px] w-[1350px] shrink-0 scale-55 sm:scale-75 lg:scale-95">
@@ -388,25 +413,45 @@ export const HomePage: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="absolute inset-0 bg-background/82 backdrop-blur-[1.5px]" />
+            <div className="ot-poster-wall-veil" />
           </div>
 
-          <div className="relative z-10 flex min-h-72 flex-col items-center justify-center px-5 py-12 text-center sm:min-h-96 sm:px-10 sm:py-14">
-            <h2 className="font-heading text-[22px] leading-tight font-extrabold tracking-tight text-balance text-foreground sm:text-3xl lg:text-4xl">
-              Your ticket to what&apos;s on,{' '}
-              <span className="text-accent-emphasis">in a couple of taps.</span>
-            </h2>
-            <p className="mt-3 max-w-lg text-[13px] leading-6 text-balance text-muted-foreground sm:text-sm">
-              Concerts, comedy, cricket and everything else happening this week. Book in seconds and the ticket lands on your phone, QR ready for the gate.
-            </p>
-            <div className="mt-6 flex w-full flex-row items-stretch justify-center gap-2 sm:w-auto sm:gap-3">
-              <Link
-                to="/events"
-                className="opentickets-glow group/cta inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-5 text-[13px] font-semibold sm:w-auto sm:flex-none sm:gap-2 sm:text-sm"
-              >
-                Browse events
-                <ArrowRight className="size-4 transition-transform duration-150 group-hover/cta:translate-x-1" />
-              </Link>
+          <div className="ot-ticket-discovery-content">
+            <div className="ot-ticket-discovery-copy">
+              <span className="ot-ticket-discovery-kicker">
+                <Sparkles className="size-3.5" />
+                This week&apos;s live picks
+              </span>
+              <h2>
+                Your next great weekend<br />
+                <span>starts here.</span>
+              </h2>
+              <p>
+                Explore concerts, sports, festivals and more. Book quickly and keep your mobile ticket ready for the gate.
+              </p>
+              <div className="ot-ticket-discovery-actions">
+                <Link to="/events" className="opentickets-glow group/cta">
+                  Browse events
+                  <ArrowRight className="size-4 transition-transform duration-150 group-hover/cta:translate-x-1" />
+                </Link>
+                <span><Ticket className="size-3.5" /> Instant mobile delivery</span>
+              </div>
+            </div>
+
+            <div className="ot-ticket-poster-stack" aria-hidden="true">
+              {heroSlides.slice(0, 3).map((event, index) => (
+                <img
+                  key={event.id}
+                  src={event.squareImage}
+                  alt=""
+                  loading="lazy"
+                  className={`ot-ticket-stack-poster ot-ticket-stack-poster-${index + 1}`}
+                />
+              ))}
+              <span className="ot-ticket-stack-label">
+                <small>CURATED NOW</small>
+                <strong>03 LIVE PICKS</strong>
+              </span>
             </div>
           </div>
         </section>

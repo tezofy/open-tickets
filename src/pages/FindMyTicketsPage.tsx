@@ -1,6 +1,21 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle2, Mail, Phone } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  Clock3,
+  LifeBuoy,
+  LockKeyhole,
+  Mail,
+  Phone,
+  QrCode,
+  ShieldCheck,
+  Sparkles,
+  Ticket,
+  UserCheck,
+} from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { formatZAR } from '../data/events';
 
@@ -11,188 +26,151 @@ export const FindMyTicketsPage: React.FC = () => {
   const [step, setStep] = useState<'lookup' | 'otp' | 'results'>('lookup');
   const [otp, setOtp] = useState('482910');
 
-  const handleContinue = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleContinue = (event: React.FormEvent) => {
+    event.preventDefault();
     if (!value.trim()) return;
     setStep('otp');
   };
 
-  const handleVerifyOtp = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleVerifyOtp = (event: React.FormEvent) => {
+    event.preventDefault();
     if (otp.trim().length < 4) return;
     setStep('results');
   };
 
-  const matchedTickets = tickets.filter((t) => {
-    const q = value.trim().toLowerCase();
-    if (!q) return true;
-    return (
-      t.attendeeEmail.toLowerCase().includes(q) ||
-      t.attendeePhone.toLowerCase().includes(q) ||
-      tickets.length > 0
-    );
+  const matchedTickets = tickets.filter((ticket) => {
+    const query = value.trim().toLowerCase();
+    if (!query) return true;
+    return ticket.attendeeEmail.toLowerCase().includes(query)
+      || ticket.attendeePhone.toLowerCase().includes(query)
+      || tickets.length > 0;
   });
 
+  const stepIndex = step === 'lookup' ? 1 : step === 'otp' ? 2 : 3;
+
   return (
-    <main id="main-content" className="flex-1 bg-background py-10 sm:py-16">
-      <div className="mx-auto w-full max-w-xl px-4 sm:px-6">
-        <div className="rounded-3xl bg-surface p-6 shadow-card sm:p-9">
-          <div className="space-y-6">
+    <main id="main-content" className="ot-find-page flex-1 bg-background pb-16 text-foreground sm:pb-20">
+      <section className="ot-find-hero" aria-labelledby="find-tickets-title">
+        <img src="media/find-tickets-ai.jpg" alt="Event guest retrieving a digital ticket on a phone" />
+        <div className="ot-find-hero-shade" aria-hidden="true" />
+        <span className="ot-find-hero-cut ot-find-hero-cut-left" aria-hidden="true" />
+        <span className="ot-find-hero-cut ot-find-hero-cut-right" aria-hidden="true" />
+
+        <div className="ot-find-hero-copy">
+          <p><Sparkles className="size-3.5" /> SECURE TICKET LOOKUP</p>
+          <h1 id="find-tickets-title">Find my tickets</h1>
+          <span>Recover guest purchases securely with the email address or mobile number used at checkout.</span>
+        </div>
+
+        <div className="ot-find-hero-badges">
+          <span><ShieldCheck className="size-4" /> One-time verification</span>
+          <span><Clock3 className="size-4" /> Takes about a minute</span>
+        </div>
+      </section>
+
+      <section className="ot-find-trust" aria-label="Ticket lookup benefits">
+        <span><LockKeyhole className="size-4" /><strong>Private lookup</strong><small>Your orders stay protected</small></span>
+        <span><UserCheck className="size-4" /><strong>No account needed</strong><small>Perfect for guest checkout</small></span>
+        <span><QrCode className="size-4" /><strong>QR ready</strong><small>Open your ticket after verification</small></span>
+      </section>
+
+      <div className="ot-find-layout">
+        <section className="ot-find-console" aria-label="Find purchased tickets">
+          <span className="ot-find-console-cut ot-find-console-cut-left" aria-hidden="true" />
+          <span className="ot-find-console-cut ot-find-console-cut-right" aria-hidden="true" />
+
+          <header className="ot-find-console-head">
             <div>
-              <h1 className="font-heading text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-                Find my tickets
-              </h1>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Bought as a guest? Enter the email or phone number you used at checkout and we’ll verify with a one-time code.
-              </p>
+              <small>GUEST ACCESS PASS</small>
+              <h2>{step === 'lookup' ? 'Start your lookup' : step === 'otp' ? 'Verify it’s you' : 'Your tickets are ready'}</h2>
             </div>
+            <b>OT / FIND / ZA</b>
+          </header>
 
+          <div className="ot-find-progress" aria-label={`Step ${stepIndex} of 3`}>
+            {['Your details', 'Verify', 'Tickets'].map((label, index) => (
+              <div key={label} className={index + 1 <= stepIndex ? 'is-active' : ''}>
+                <span>{index + 1 < stepIndex ? <Check className="size-3" /> : index + 1}</span>
+                <small>{label}</small>
+              </div>
+            ))}
+          </div>
+
+          <div className="ot-find-console-body">
             {step === 'lookup' && (
-              <form onSubmit={handleContinue} className="space-y-4">
-                <div role="radiogroup" aria-label="Lookup method" className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={mode === 'email'}
-                    onClick={() => {
-                      setMode('email');
-                      setValue('');
-                    }}
-                    className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition cursor-pointer ${
-                      mode === 'email'
-                        ? 'bg-primary text-primary-foreground shadow-sm'
-                        : 'bg-background text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    <Mail className="size-4" />
-                    Email
+              <form onSubmit={handleContinue} className="ot-find-form">
+                <div className="ot-find-intro">
+                  <h3>How should we find your order?</h3>
+                  <p>Use the same contact detail you entered when purchasing your tickets.</p>
+                </div>
+
+                <div role="radiogroup" aria-label="Lookup method" className="ot-find-mode">
+                  <button type="button" role="radio" aria-checked={mode === 'email'} className={mode === 'email' ? 'is-active' : ''} onClick={() => { setMode('email'); setValue(''); }}>
+                    <span><Mail className="size-4" /></span><div><strong>Email address</strong><small>Use your checkout email</small></div><i />
                   </button>
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={mode === 'phone'}
-                    onClick={() => {
-                      setMode('phone');
-                      setValue('');
-                    }}
-                    className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition cursor-pointer ${
-                      mode === 'phone'
-                        ? 'bg-primary text-primary-foreground shadow-sm'
-                        : 'bg-background text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    <Phone className="size-4" />
-                    Phone
+                  <button type="button" role="radio" aria-checked={mode === 'phone'} className={mode === 'phone' ? 'is-active' : ''} onClick={() => { setMode('phone'); setValue(''); }}>
+                    <span><Phone className="size-4" /></span><div><strong>Mobile number</strong><small>Use your checkout phone</small></div><i />
                   </button>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label htmlFor="guest-lookup-input" className="text-xs font-medium text-foreground">
-                    {mode === 'email' ? 'Email address' : 'Mobile phone number'}
-                  </label>
-                  <input
-                    id="guest-lookup-input"
-                    type={mode === 'email' ? 'email' : 'tel'}
-                    required
-                    value={value}
-                    onChange={(e) => setValue(e.target.value)}
-                    placeholder={mode === 'email' ? 'you@example.com' : '+27 XX XXX XXXX'}
-                    className="h-12 w-full rounded-xl bg-background px-4 text-sm text-foreground ring-1 ring-border outline-none transition-shadow focus:ring-2 focus:ring-accent"
-                  />
-                </div>
+                <label className="ot-find-field" htmlFor="guest-lookup-input">
+                  <span>{mode === 'email' ? 'Email address' : 'Mobile phone number'}</span>
+                  <div>{mode === 'email' ? <Mail className="size-4" /> : <Phone className="size-4" />}
+                    <input id="guest-lookup-input" type={mode === 'email' ? 'email' : 'tel'} required value={value} onChange={(event) => setValue(event.target.value)} placeholder={mode === 'email' ? 'you@example.com' : '+27 XX XXX XXXX'} />
+                  </div>
+                </label>
 
-                <button
-                  type="submit"
-                  className="opentickets-glow inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold cursor-pointer"
-                >
-                  Continue
-                </button>
+                <button type="submit" className="ot-find-primary">Send verification code <ArrowRight className="size-4" /></button>
+                <p className="ot-find-privacy"><LockKeyhole className="size-3.5" /> We only use this detail to locate and protect your order.</p>
               </form>
             )}
 
             {step === 'otp' && (
-              <form onSubmit={handleVerifyOtp} className="space-y-4">
-                <div className="rounded-2xl bg-accent/12 p-4 text-xs text-foreground">
-                  We sent a 6-digit verification code to <strong>{value}</strong>. (Demo code pre-filled: <strong>482910</strong>)
+              <form onSubmit={handleVerifyOtp} className="ot-find-form ot-find-otp-form">
+                <span className="ot-find-otp-icon"><Mail className="size-6" /></span>
+                <div className="ot-find-intro">
+                  <h3>Check your {mode === 'email' ? 'inbox' : 'messages'}</h3>
+                  <p>We sent a six-digit verification code to <strong>{value}</strong>.</p>
                 </div>
-
-                <div className="space-y-1.5">
-                  <label htmlFor="otp-code" className="text-xs font-medium text-foreground">
-                    One-time verification code
-                  </label>
-                  <input
-                    id="otp-code"
-                    type="text"
-                    required
-                    maxLength={6}
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    className="h-12 w-full rounded-xl bg-background px-4 text-center font-mono text-lg font-bold tracking-[0.35em] text-foreground ring-1 ring-border outline-none focus:ring-2 focus:ring-accent"
-                  />
-                </div>
-
-                <div className="flex gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setStep('lookup')}
-                    className="h-12 flex-1 rounded-xl border border-border bg-background text-sm font-semibold text-foreground cursor-pointer"
-                  >
-                    Back
-                  </button>
-                  <button
-                    type="submit"
-                    className="opentickets-glow h-12 flex-[2] rounded-xl text-sm font-bold cursor-pointer"
-                  >
-                    Verify & Show Tickets
-                  </button>
+                <label className="ot-find-field" htmlFor="otp-code">
+                  <span>One-time verification code</span>
+                  <div className="ot-find-code-field"><LockKeyhole className="size-4" /><input id="otp-code" type="text" inputMode="numeric" required maxLength={6} value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, ''))} /></div>
+                </label>
+                <p className="ot-find-demo">Prototype code: <strong>482910</strong></p>
+                <div className="ot-find-form-actions">
+                  <button type="button" onClick={() => setStep('lookup')}><ArrowLeft className="size-4" /> Back</button>
+                  <button type="submit" className="ot-find-primary">Verify & show tickets <ArrowRight className="size-4" /></button>
                 </div>
               </form>
             )}
 
             {step === 'results' && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-sm font-bold text-emerald-700 dark:text-emerald-300">
-                  <CheckCircle2 className="size-4" />
-                  Found {matchedTickets.length} order(s) linked to your lookup
-                </div>
-
-                <div className="space-y-3">
-                  {matchedTickets.map((t) => (
-                    <div
-                      key={t.id}
-                      className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-background p-4"
-                    >
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-bold text-foreground">{t.eventTitle}</p>
-                        <p className="mt-0.5 text-xs text-muted-foreground">
-                          {t.seatCategory} × {t.quantity} · {formatZAR(t.totalPaid)}
-                        </p>
-                        <p className="mt-0.5 font-mono text-[11px] text-accent-emphasis">
-                          Order: {t.orderNumber}
-                        </p>
-                      </div>
-                      <Link
-                        to="/profile/tickets"
-                        className="opentickets-glow inline-flex h-9 shrink-0 items-center gap-1 rounded-xl px-3.5 text-xs font-bold"
-                      >
-                        Open QR
-                        <ArrowRight className="size-3.5" />
-                      </Link>
-                    </div>
+              <div className="ot-find-results">
+                <div className="ot-find-success"><CheckCircle2 className="size-5" /><div><strong>Verification complete</strong><span>Found {matchedTickets.length} order(s) linked to your lookup.</span></div></div>
+                <div className="ot-find-ticket-list">
+                  {matchedTickets.map((ticket) => (
+                    <article key={ticket.id}>
+                      <span className="ot-find-ticket-icon"><Ticket className="size-5" /></span>
+                      <div><small>{ticket.orderNumber}</small><h3>{ticket.eventTitle}</h3><p>{ticket.seatCategory} × {ticket.quantity} · {formatZAR(ticket.totalPaid)}</p></div>
+                      <Link to="/profile/tickets">Open QR <ArrowRight className="size-3.5" /></Link>
+                    </article>
                   ))}
                 </div>
-
-                <button
-                  type="button"
-                  onClick={() => setStep('lookup')}
-                  className="text-xs font-semibold text-muted-foreground underline hover:text-foreground cursor-pointer"
-                >
-                  Search another email or phone
-                </button>
+                <button type="button" className="ot-find-search-again" onClick={() => setStep('lookup')}><ArrowLeft className="size-3.5" /> Search another email or phone</button>
               </div>
             )}
           </div>
-        </div>
+        </section>
+
+        <aside className="ot-find-guide">
+          <div className="ot-find-guide-title"><span><Ticket className="size-5" /></span><div><small>HOW IT WORKS</small><h2>Three simple steps</h2></div></div>
+          <ol>
+            <li><span>01</span><div><strong>Enter your details</strong><p>Use the email or phone number from checkout.</p></div></li>
+            <li><span>02</span><div><strong>Verify securely</strong><p>Enter the one-time code we send you.</p></div></li>
+            <li><span>03</span><div><strong>Access your ticket</strong><p>Open the QR ticket linked to your order.</p></div></li>
+          </ol>
+          <div className="ot-find-guide-help"><LifeBuoy className="size-5" /><div><strong>Still can’t find it?</strong><p>Our support team can help locate your booking.</p><Link to="/contact">Contact support <ArrowRight className="size-3.5" /></Link></div></div>
+        </aside>
       </div>
     </main>
   );
