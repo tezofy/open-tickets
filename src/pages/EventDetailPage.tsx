@@ -269,7 +269,7 @@ export const EventDetailPage: React.FC = () => {
                   {/* Main Highway Accent */}
                   <path
                     d="M-20 155 L 820 85"
-                    className="stroke-[#fbd38d] dark:stroke-[#a9dd36]/40"
+                    className="stroke-[#fbd38d] dark:stroke-[#f2c318]/40"
                     strokeWidth="3.5"
                     fill="none"
                   />

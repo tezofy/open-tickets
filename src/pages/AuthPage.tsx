@@ -79,7 +79,7 @@ export const AuthPage: React.FC<{ mode: 'login' | 'register' }> = ({ mode }) => 
 
           <div className="relative flex items-center justify-between">
             <Link to="/" aria-label="Open Tickets home" className="inline-flex items-center">
-              <img src="assets/logo/opentickets-logo-for-dark.svg" alt="Open Tickets" className="h-7 w-auto" />
+              <img src="assets/logo/opentickets-logo-for-dark.png" alt="Open Tickets" className="h-7 w-auto" />
             </Link>
             <Link
               to="/"
@@ -136,8 +136,8 @@ export const AuthPage: React.FC<{ mode: 'login' | 'register' }> = ({ mode }) => 
         <section className="flex flex-col justify-between px-4 py-8 sm:px-8 lg:px-12 lg:py-12">
           <div className="flex items-center justify-between lg:hidden">
             <Link to="/" aria-label="Open Tickets home" className="inline-flex items-center">
-              <img src="assets/logo/opentickets-logo-for-light.svg" alt="Open Tickets" className="h-6 w-auto dark:hidden" />
-              <img src="assets/logo/opentickets-logo-for-dark.svg" alt="Open Tickets" className="hidden h-6 w-auto dark:block" />
+              <img src="assets/logo/opentickets-logo-for-light.png" alt="Open Tickets" className="h-6 w-auto dark:hidden" />
+              <img src="assets/logo/opentickets-logo-for-dark.png" alt="Open Tickets" className="hidden h-6 w-auto dark:block" />
             </Link>
             <Link
               to="/"

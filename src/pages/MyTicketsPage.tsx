@@ -449,7 +449,7 @@ export const MyTicketsPage: React.FC = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#eef8d7] px-3 py-1 text-[11px] font-bold text-[#154546]">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#fff8d6] px-3 py-1 text-[11px] font-bold text-[#041e2a]">
                 <Sun className="size-3.5" />
                 Max Contrast Gate Pass
               </span>
@@ -476,7 +476,7 @@ export const MyTicketsPage: React.FC = () => {
               />
             </div>
 
-            <p className="font-mono text-sm font-extrabold tracking-widest text-[#154546]">
+            <p className="font-mono text-sm font-extrabold tracking-widest text-[#041e2a]">
               {gateModalTicket.orderNumber}
             </p>
             <p className="mt-1 text-[11px] text-gray-500">
