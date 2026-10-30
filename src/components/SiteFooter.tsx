@@ -16,7 +16,7 @@ export const SiteFooter: React.FC = () => {
           <div className="ot-footer-hero">
             <div className="ot-footer-brand-block">
               <Link aria-label="Open Tickets home" className="ot-footer-logo" to="/">
-                <img alt="Open Tickets" src="assets/logo/opentickets-logo-for-dark.svg" />
+                <img alt="Open Tickets" src="assets/logo/opentickets-logo-for-dark.png" />
               </Link>
               <div>
                 <h2>Good times start with<br /><span>the right ticket.</span></h2>

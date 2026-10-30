@@ -180,12 +180,12 @@ export const MobileBottomNav: React.FC<{ forceVisibleInSimulator?: boolean }> = 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <img
-                  src="assets/logo/opentickets-logo-for-light.svg"
+                  src="assets/logo/opentickets-logo-for-light.png"
                   alt="Open Tickets"
                   className="h-7 w-auto dark:hidden"
                 />
                 <img
-                  src="assets/logo/opentickets-logo-for-dark.svg"
+                  src="assets/logo/opentickets-logo-for-dark.png"
                   alt="Open Tickets"
                   className="hidden h-7 w-auto dark:block"
                 />
